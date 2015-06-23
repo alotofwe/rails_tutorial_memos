@@ -87,11 +87,11 @@ Railsには色々なショートカットがある
 
 generateでroutesにhome, help actionについて追記されている
 
-``` ruby
+```ruby
 get 'static_pages/home'
 ```
 
-```get```でrequestを指定し，```'static_pages/home'```でURLを指定している  
+getでrequestを指定し，'static_pages/home'でURLを指定している  
 このURLは，Static Pages Controllerのhomeアクションを指している
 
 ### Box 3.2. GET, et cet.
@@ -115,4 +115,7 @@ viewについて，.erbはSection 3.4で学ぶが，自動生成されるviewは
 ### 3.2.2 Custom static pages
 
 viewを (静的なままに) 書き換えてみる
+
+## 3.3 Getting started with testing
+
 
