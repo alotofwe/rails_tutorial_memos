@@ -66,6 +66,8 @@ DBのアップデートを行う (Section 6.1.1で詳しく学ぶ)
 
 **使用しているGemfileのバージョンに対応したrakeのバージョンを使うために**，```bundle exec```をつける
 
+-----
+
 ### Box 2.1. Rake
 
 > In the Unix tradition, the make utility has played an important role in building executable programs from source code;
@@ -73,6 +75,8 @@ DBのアップデートを行う (Section 6.1.1で詳しく学ぶ)
 makeでソースコードから実行可能なプログラムを作成する
 
 rakeはRuby makeであり，Ruby版makeである
+
+-----
 
 ### 2.2.1 A user tour
 
