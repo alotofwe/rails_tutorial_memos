@@ -142,3 +142,69 @@ scaffoldで生成されたUser resourceの弱点
   - ページごとのレイアウトが一貫していない
 * 本当の理解にならない
   - ぽちぽちしてファイルを生成しているだけ
+
+## 2.3 The Microposts resource
+
+Users resourceを作ったので，次はMicroposts resourceを作る
+
+> indeed, seeing the parallel structure of Users and Microposts even at this early stage is one of the prime motivations for this chapter.
+
+UsersとMicropostsを，平行して生成し見ていきましょう
+
+### 2.3.1 A micropost microtour
+
+Userみたく```rails generate scaffold Micropost content:text user_id:integer```して```bundle exec rake db:migrate```をする
+
+Userみたくroutesに```resources :microposts```が追記されているのを確認
+
+UserみたくMicroposts Controllerが生成されているのを確認
+
+Userみたくページが生成されているのをブラウザ上でぽちぽちして確認
+
+### 2.3.2 Putting the micro in microposts
+
+Micropostの内容の文字数制限をかけるために，validationsを追記する
+
+```validates :content, length: { maximum: 140 }```
+
+Micropost Modelにlength validationを追記  
+140文字までの制限をかける
+
+validationsについてはSection 6.2で詳しく行う
+
+140文字を超えるような入力をブラウザ上でフォームから行うと，エラーメッセージが表示されるのを確認する
+
+### 2.3.3 A user has_many microposts
+
+Railsの強みの1つが，異なるモデル同士で関連 (associations) が取れるということ
+
+```has_many :microposts```  
+``` belongs_to :user```
+
+![Figure2.15](https://softcover.s3.amazonaws.com/636/ruby_on_rails_tutorial_3rd_edition/images/figures/micropost_user_association.png)
+
+Micropostにuser_idがあるおかげで，各micropostsはあるuserと関連することができる
+
+rails consoleから，userとmicropostsで関連がとれているのを確認
+
+### 2.3.4 Inheritance hierarchies
+
+オブジェクト指向プログラミングの概要を学ぶ
+
+```class Piyo < Hoge```
+
+PiyoクラスはHogeクラスを継承していることがこの記述から分かる  
+
+Hogeを継承したPiyoは，Hoge (と，Hogeが継承しているfoo, fooが継承しているbar ... ) の機能を受け継ぐ
+
+実例を元にすると以下のとおり
+
+![Figure2.16](https://softcover.s3.amazonaws.com/636/ruby_on_rails_tutorial_3rd_edition/images/figures/demo_model_inheritance.png)
+
+![Figure2.17](https://softcover.s3.amazonaws.com/636/ruby_on_rails_tutorial_3rd_edition/images/figures/demo_controller_inheritance.png)
+
+### 2.3.5 Deploying the toy app
+
+```git push```して```git push heroku```する (Chapter 1 参照)
+
+**```heroku run rake db:migrate```でherokuのproduction環境でもDBのアップデートを行う**
