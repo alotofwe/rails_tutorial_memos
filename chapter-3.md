@@ -74,6 +74,8 @@ Railsには色々なショートカットがある
 
 ここで```git add && git commit -m 'message' && git push```しておく
 
+-----
+
 ### Box 3.1. Undoing things
 
 ```rails g```で生成されたファイルを1つ1つ手で消していくのは大変  
@@ -85,6 +87,8 @@ Railsには色々なショートカットがある
 
 バージョン番号は```bundle exec rake db:migrate:status```で確認可能
 
+-----
+
 generateでroutesにhome, help actionについて追記されている
 
 ```ruby
@@ -94,6 +98,8 @@ get 'static_pages/home'
 getでrequestを指定し，'static_pages/home'でURLを指定している  
 このURLは，Static Pages Controllerのhomeアクションを指している
 
+-----
+
 ### Box 3.2. GET, et cet.
 
 * GET : get a page. データを読む
@@ -101,6 +107,7 @@ getでrequestを指定し，'static_pages/home'でURLを指定している
 * PATCH : サーバにあるデータをアップデートする
 * DELETE : サーバにあるデータを消去する
 
+-----
 
 > This is normal for a collection of static pages: the REST architecture isn’t the best solution to every problem.
 
