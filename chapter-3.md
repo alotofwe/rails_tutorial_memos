@@ -125,4 +125,91 @@ viewを (静的なままに) 書き換えてみる
 
 ## 3.3 Getting started with testing
 
+homeとhelpのページを作成したので，次はaboutページを作成する  
+ここでは，自動テストを用いてaboutページを作っていく(TDD)
 
+> Developed over the course of building an application, the resulting test suite serves as a safety net and as executable documentation of the application source code.
+
+テストはソースコードのドキュメントになり，かつアプリのセーフティーネットとなる (アプリの安全を確保することができる)  
+(そんなに言うほどドキュメント代わりになるものだろうか...)
+
+> When done right, writing tests also allows us to develop faster despite requiring extra code, because we’ll end up wasting less time trying to track down bugs.
+
+テストを書くのは多少手間ではあるけれど，バグの発見が早くなるので，結果的に開発が速くなる
+
+-----
+
+### Box 3.3. When to test
+
+いつ，どのようにしてテストを書くかを考えるときは，なぜテストを書くかを考えてみる
+
+いつテストを書くべきかのガイドラインは以下のとおり
+
+**1. テストコードが実際のコードに比べて簡潔になりそうな時はtest first**  
+**2. 今のコードの状態では目的の完成までまだ遠く，先がまだまだ長そうな時は結果を明確にするためにtest first**  
+**3. セキュリティ周りは最重要事項であり何かあっては困るので，テストを書く**  
+**4. バグを再現し，それにたいして正しい対策がされているかどうか確かめるために，テストを書く**  
+**5. この後変更される可能性が高い場合は，テストを書く**  
+**6. リファクタリングする前に，リファクタリングによって求められる機能が失われないようにテストを書く**
+
+-----
+
+> Our main testing tools will be controller tests (starting in this section), model tests (starting in Chapter 6), and integration tests (starting in Chapter 7).
+
+**NOBODY expects the Spanish Inquisition!!!!**
+
+Our chief wepon is controller tests...and mode tests...and controller tests...  
+Our two weapons are controller and model tests...and integration tests...  
+Our **three** weapons are controller and model and integration tests...and controller tests... I'll come in again.
+
+### 3.3.1 Our first test
+
+aboutページへのテストを書いていく
+
+テストの準備は，```rails generate controller```を実行した時に既に終わっている
+
+```ruby
+test "should get home" do
+  get :home
+  assert_response :success
+end
+```
+
+get :homeはstatic_pagesのhomeページに飛ぶこと
+
+:successとはHTTPのstatus codeとして200が返ってくること
+
+> says “Let’s test the Home page by issuing a GET request to the home action and then making sure we receive a ‘success’ status code in response.”
+
+テストすると通ることが分かる
+
+### 3.3.2 Red
+
+TDDとは本来，落ちるテストを書き，落ちることを確かめ，落ちないようにコードを修正し，通ることを確かめるというやり方  
+落ちるテストを書いてみる
+
+まだaboutページは作成していないが，aboutページに飛ぶとsuccessが返るテストを書き，落ちることを確かめる
+
+### 3.3.3 Green
+
+3.3.2のテストが落ちたので，通るようにアプリのコードを修正する
+
+テストが落ちた際のエラーメッセージを読み，それを解消するように修正していく
+
+```No route matches {:action=>"about", :controller=>"static_pages"}```
+
+routesに```get 'static_pages/about'```を追記
+
+```The action 'about' could not be found for StaticPagesController```
+
+StaticPagesControllerにaboutメソッドを追記
+
+```ActionView::MissingTemplate: Missing template static_pages/about```
+
+viewとしてabout.html.erbを作成し，htmlを追記
+
+これでテストが通る
+
+### 3.3.4 Refactor
+
+テストが通ったら香り高いコードを修正すべき
