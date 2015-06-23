@@ -213,3 +213,35 @@ viewとしてabout.html.erbを作成し，htmlを追記
 ### 3.3.4 Refactor
 
 テストが通ったら香り高いコードを修正すべき
+
+## 3.4 Slightly dynamic pages
+
+ちょっと動的にする  
+ページごとにタイトルを変える
+
+本格的に動的にするのはChapter 7から
+
+test firstにする
+
+タイトルのフォーマットは"<page name> | Ruby on Rails Tutorial Sample App"というものにする
+
+```rails new```をしたときに，app/views/layouts/application.html.erbが生成されているはずなので，一旦別名にして退避させておく  
+(一般的な方法ではない)
+
+### 3.4.1 Testing titles (Red)
+
+TDDらしく，とりあえず落ちるコードを書く
+
+典型的なHTMLの構成では，doctypeでhtmlのバージョンを指定し，headでtitleなどを指定し，bodyにページの内容を書く
+
+```assert_select "HTML tag", "expected text"```
+
+ここでのテストでは，```assert_select```を用いることで，HTMLタグを指定してその内容を検証する
+
+これを使用したtitleチェックのテストを書き，現時点では落ちることを確認する
+
+### 3.4.2 Adding page titles (Green)
+
+落ちるテストが通るように，コードを修正する
+
+簡単に，home, help, aboutの各htmlに違うtitleを指定し，テストが通ることを確認する
