@@ -70,3 +70,104 @@ Railsでは部分テンプレート (Partials) を使ってテンプレートを
 最初に_をつけるのは部分テンプレートの取り決めである (render宣言時にはつけない)
 
 header, footerも部分テンプレート化しておく
+
+## 5.2 Sass and the asset pipeline
+
+最近のRailsではasset pipeline機能が追加されている  
+これはproduction環境下にてCSS, JavaScript, imagesの管理を向上させる機能である
+
+### 5.2.1 The asset pipeline
+
+> The asset pipeline involves lots of changes under Rails’ hood, but from the perspective of a typical Rails developer there are three principal features to understand: asset directories, manifest files, and preprocessor engines.
+
+* asset directories
+
+assetsを入れる3つのディレクトリがある
+
+- app/assets: 大部分のassets
+- lib/assets: 独自開発したライブラリ
+- vendor/assets: 外から持ってきたライブラリ
+
+* Manifest files
+
+自動生成されるapplication.cssのようなファイルのことを言う  
+
+**コメントアウトされているように見えるが，Sprockets gemにより**きちんと機能している
+
+```
+*= require_tree .
+```
+
+Manifest fileがあるディレクトリ，加えてそれよりも下のディレクトリにあるcssを全て読み込む
+
+```
+*= require_self
+```
+
+自分自身を読み込む
+
+* Preprocessor engines
+
+**Railsがテンプレートを表示させるときにプリプロセッサを動かす**  
+**典型的なものだと.scss, .coffee, .erbがある**  
+
+いつ，どのファイルで何のプリプロセッサが走るかは，fileの拡張子として指定する
+
+> foobar.js.erb.coffee
+
+**1つのファイルにつき2つ以上のプリプロセッサを走らせることもできる**
+
+* Efficiency in production
+
+**assets pipelineがあるおかげで，ファイルを自力で分割して管理しなくとも**  
+**どのcssが必要でどれが不必要かを判断し，不必要なものは削除している**
+
+**この機能があるおかげで，js, css, imagesについてのロード時間を開発者が気にしなくても済む**
+
+### 5.2.2 Syntactically awesome stylesheets
+
+> Sass is a language for writing stylesheets that improves on CSS in many ways. In this section, we cover two of the most important improvements, nesting and variables. (A third technique, mixins, is introduced in Section 7.1.1.)
+
+sassを導入すると，入れ子や変数など，cssにはない機能が使えて便利
+
+cssでできることは全て，scssでも行うことができる
+
+* Nesting
+
+``` scss
+.center {
+  text-align: center;
+  h1 {
+    margin-bottom: 10px;
+  }
+}
+```
+
+親の名前を使いたい時は&を利用する
+
+``` scss
+#logo {
+  float: left;
+  margin-right: 10px;
+  font-size: 1.7em;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  padding-top: 9px;
+  font-weight: bold;
+  &:hover {
+    color: #fff;
+    text-decoration: none;
+  }
+}
+```
+
+* variables
+
+値を変数に代入することができる
+
+``` scss
+$light-gray: #777;
+```
+
+Less CSSは@，Sassは$を変数名の頭につける
