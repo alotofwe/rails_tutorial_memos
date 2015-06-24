@@ -245,3 +245,60 @@ TDDらしく，とりあえず落ちるコードを書く
 落ちるテストが通るように，コードを修正する
 
 簡単に，home, help, aboutの各htmlに違うtitleを指定し，テストが通ることを確認する
+
+### 3.4.3 Layouts and embedded Ruby (Refactor)
+
+3.4.2の修正でも良いが，Railsの力を使うことでもっと簡単にできる
+
+> This repeated code is a violation of the important “Don’t Repeat Yourself” (DRY) principle; in this section we’ll “DRY out our code” by removing the repetition.
+
+似たようなものの繰り返しは避けよう
+
+1. 各ページのタイトルがよく似ている
+
+embedded Ruby (erb) を用いることで，titleの指定にリテラルを用いて，title指定の行を統一する
+
+``` ruby
+<% provide(:title, "Home") %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= yield(:title) %> | Ruby on Rails Tutorial Sample App</title>
+...
+```
+
+> ERb is the primary template system for including dynamic content in web pages.
+
+erbを用いることで，ページに対して動的に内容を指定することができる
+
+> The distinction between the two types of embedded Ruby is that <% ... %> executes the code inside, while <%= ... %> executes it and inserts the result into the template
+
+```<% ... %>```
+
+中に書かれたコードを実行する
+
+
+```<%= ... %>```
+
+中に書かれたコードを実行し，その結果をページに挿入する
+
+erbを用いてもテストが通ることを確認する
+
+上の書き換えによって，各ページのtitleタグの記述が完全に一致した  
+レイアウトファイル (application.html.erb) に共通の構成を記述することにより，各ページにこれらを書かずに済む  
+(各ページは同じレイアウトを使いまわす)
+
+レイアウトファイルでは，```<%= yield %>```を記述したところに書くページの内容が挿入される
+
+デフォルトでレイアウトファイルにはcssやjsなどを読み込む行が追記されている  
+csrf_meta_tagsは，CSRFを防止する
+
+[IPA ISEC セキュア・プログラミング講座：Webアプリケーション編 第4章 セッション対策：リクエスト強要（CSRF）対策](http://www.ipa.go.jp/security/awareness/vendor/programmingv2/contents/301.html)
+
+レイアウトファイルに共通の行を移し，その行を各ページから消してもテストが通ることを確認する
+
+### 3.4.4 Setting the root route
+
+このアプリのルート (Home Page) を指定する
+
+hello world!を表示するアプリの場合と同様，```root 'controller_name#action'```で指定可能
