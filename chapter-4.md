@@ -318,7 +318,7 @@ RailsのController Classを見ると，これも継承しており階層構造�
 
 ```attr_accessor :name, :email```
 
-@nameと@emailというインスタンス変数にgetterとsetterを定義する
+**@nameと@emailというインスタンス変数にgetterとsetterを定義する**
 
 [getter/setterとはなんだったのか - プログラマーの脳みそ](http://d.hatena.ne.jp/Nagise/20141010/1412930502)
 
