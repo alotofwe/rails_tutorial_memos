@@ -242,14 +242,6 @@ keyを指定するのは文字列でもよいが，シンボルを使っても�
 [class Symbol](http://docs.ruby-lang.org/ja/2.0.0/class/Symbol.html)
 
 デフォルトでは，宣言されていないkeyのvalueはnilとなる  
-Hash.new(default value)でこれを健康することが可能
-
-``` ruby
->> h = Hash.new("empty")
-=> {}
->> h['hoge']
-=> "empty"
-```
 
 シンボルを使うと=>を使わなくとも```{ name: "Michael Hartl", email: "michael@example.com" }```と書くことができる
 
@@ -272,3 +264,65 @@ Hash.new(default value)でこれを健康することが可能
 
 メソッド呼び出しの途中の空白や改行は無視される
 
+## 4.4 Ruby classes
+
+> Ruby, like many object-oriented languages, uses classes to organize methods; these classes are then instantiated to create objects.
+
+オブジェクト指向言語では，メソッドを整理するためにclassを使う
+
+### 4.4.1 Constructors
+
+```class```メソッドはそのオブジェクトのクラス名を返す
+
+Object.new()でオブジェクトを生み出すこともできる
+
+Hashでは，Hash.new(default value)でこれをデフォルト値とすることが可能
+
+``` ruby
+>> h = Hash.new("empty")
+=> {}
+>> h['hoge']
+=> "empty"
+```
+クラス自身から呼び出すことのできるメソッドはクラスメソッドと呼ばれる  
+newされたオブジェクトはインスタンスとも呼ばれ，インスタンスから呼び出すことのできるメソッドはインスタンスメソッドと呼ばれる
+
+### 4.4.2 Class inheritance
+
+```superclass```メソッドでそのオブジェクトのクラス階層を調べることができる
+
+あるクラスAは他のクラスBを継承していて，BがCを継承していて...と階層構造になっている
+
+![Figure4.1](https://softcover.s3.amazonaws.com/636/ruby_on_rails_tutorial_3rd_edition/images/figures/string_inheritance_ruby_1_9.png)
+
+既にあるクラスを実際に継承するようなコードを書いて構造を深く知る
+
+```self```で自分自身を参照することができる
+
+### 4.4.3 Modifying built-in classes
+
+Rubyでは，元々あるクラスにもメソッドを生やすことができる (openedである)
+
+### 4.4.4 A controller class
+
+RailsのController Classを見ると，これも継承しており階層構造になっているのが分かる
+
+![Figure4.3](https://softcover.s3.amazonaws.com/636/ruby_on_rails_tutorial_3rd_edition/images/figures/static_pages_controller_inheritance.png)
+
+各Controllerは開発者がnewを明示的に書いているわけでは無いが，RailsはRubyで書かれているだけでRubyであるというわけではないので，内部でRailsがよしなにやってくれている
+
+### 4.4.5 A user class
+
+例としてUser classを作成してみる
+
+```attr_accessor :name, :email```
+
+@nameと@emailというインスタンス変数にgetterとsetterを定義する
+
+[getter/setterとはなんだったのか - プログラマーの脳みそ](http://d.hatena.ne.jp/Nagise/20141010/1412930502)
+
+インスタンス変数の名前は@からはじまる
+
+```initialize```メソッドは特別で，newされた時に走るメソッド
+
+requireの``` . ```はカレントディレクトリを指定しているということ
