@@ -65,7 +65,7 @@ rails consoleは，デフォルトではdevelopmentで起動する (environment�
 
 ### 4.2.1 Comments
 
-```#```以降の，その行の文字は全てコメントとなる  
+``` # ```以降の，その行の文字は全てコメントとなる  
 コメントは人間がコードを読むときに有効
 
 ### 4.2.2 Strings
@@ -136,3 +136,4 @@ Rubyのメソッドでは，明示的にreturnをせずとも，一番最後の�
 メソッドのことを学んだので，改めてこの章の最初で書いたhelperを見てみる
 
 helperをincludeすることで，includeした先でhelperのメソッドを使用することができる (mixed in)
+
