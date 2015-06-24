@@ -101,9 +101,9 @@ Rubyでは，nilも含めて全てがオブジェクトである
 
 例をたくさん見ることで理解していこう
 
-String.length : 文字列の長さが返る
+"".length : 文字列の長さが返る
 
-String.empty? : 文字列が空かどうかがtrue or falseで返る
+"".empty? : 文字列が空かどうかがtrue or falseで返る
 
 Rubyではtrue or falseで結果が返るメソッドには，最後に?がつく  
 
@@ -136,4 +136,139 @@ Rubyのメソッドでは，明示的にreturnをせずとも，一番最後の�
 メソッドのことを学んだので，改めてこの章の最初で書いたhelperを見てみる
 
 helperをincludeすることで，includeした先でhelperのメソッドを使用することができる (mixed in)
+
+## 4.3 Other data structures
+
+上に挙げた他にも，データ構造はたくさんある
+
+### 4.3.1 Arrays and ranges
+
+順序付き配列  
+[]で囲まれる
+
+"".split : 文字列から配列を作る．区切り文字は引数として指定可能，省略すると空白で区切る
+
+Rubyの配列は0始まり
+
+[].first : 配列の最初の要素を返す
+
+[].second : 配列の二番目の要素を返す
+
+[].last : 配列の最後の要素を返す
+
+a == b : aとbの値が等しければtrue，そうでなければfalseが返る
+
+a != b : aとbの値が等しければfalse，そうでなければtrueが返る
+
+配列はlength以外にも，empty?, include?, sort, reverse, shuffleなど，様々なメソッドが使える
+
+メソッド名の最後に``` ! ```がつくものは破壊的メソッドであり，メソッドを実行したオブジェクトの内容を書き換える  
+そうでないものは，基本的にオブジェクトを書き換えない
+
+[] << Object : 配列の末尾にオブジェクトをプッシュする
+
+[].join : 配列の要素を結合して文字列を返す．引数として要素の間に文字列をいれることができる
+
+rangeは配列に密接に関わり，配列を指定した部分のみ取り出したりすることができる
+
+``` ruby4.3.3 Hashes and symbols
+>> a = %w[foo bar baz quux]         # Use %w to make a string array.
+=> ["foo", "bar", "baz", "quux"]
+>> a[0..2]
+=> ["foo", "bar", "baz"]
+```
+
+-1というインデックスは，配列の最後の要素を指す  
+-2, -3 ... も同様，後ろから配列を見る
+
+``` ruby
+>> ary = [1, 2, 3, 4, 5]
+=> [1, 2, 3, 4, 5]
+>> ary[-2]
+=> 4
+>> a = (0..9).to_a
+=> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+>> a[2..(a.length-1)]               # Explicitly use the array's length.
+=> [2, 3, 4, 5, 6, 7, 8, 9]
+>> a[2..-1]                         # Use the index -1 trick.
+=> [2, 3, 4, 5, 6, 7, 8, 9]
+```
+
+### 4.3.2 Blocks
+
+```{ |args| ... }```のようにブロックを指定する  
+ブロックの中ではargsの値を使うことができ，argsの値はブロックの外で指定をする
+
+``` { ```の代わりに```do```，``` } ```の代わりに```end```を使うこともできる  
+一般的な書き方，ブロックが一行の時に{}，そうでない時にdo ~ endを使う  
+(公式な規約だった気がする)
+
+each，timesなどの後にブロックが指定された場合は，各each or timesの値ごとにブロックが実行され，実行ごとに与えられるargsが変わる
+
+mapは，ブロックの実行結果を実行順に配列にしたものを返す  
+また，以下の様な略記法もある
+
+``` ruby
+>> %w[A B C].map(&:downcase)
+=> ["a", "b", "c"]
+```
+
+この例はシンボルを使っているが，シンボルはSection 4.3.3で詳しく扱う
+
+今まで書いてきたtestもブロックを利用している (見ての通り，do ~ endで囲まれている)
+
+### 4.3.3 Hashes and symbols
+
+インデックスが必ずしも整数でなくともよいのがHash  
+keyとvalueでペアになっている  
+要素の順番指定は無い
+
+hashrocket (=>) を使ってハッシュを定義できる
+
+``` ruby
+>> user = { "first_name" => "Michael", "last_name" => "Hartl" }
+=> {"last_name"=>"Hartl", "first_name"=>"Michael"}
+```
+
+keyを指定するのは文字列でもよいが，シンボルを使ってもよい (:name)  
+シンボルは文字列の仲間みたいにみえるが，少なくともいくつかのメソッドが使えないという点で文字列と違う
+
+> シンボルを表すクラス。シンボルは任意の文字列と一対一に対応するオブジェクトです。  
+> 文字列の代わりに用いることもできますが、必ずしも文字列と同じ振る舞いをするわけではありません。   
+> 同じ内容のシンボルはかならず同一のオブジェクトです。
+
+シンボルオブジェクトは以下のようなリテラルで得られます。
+
+[class Symbol](http://docs.ruby-lang.org/ja/2.0.0/class/Symbol.html)
+
+デフォルトでは，宣言されていないkeyのvalueはnilとなる  
+Hash.new(default value)でこれを健康することが可能
+
+``` ruby
+>> h = Hash.new("empty")
+=> {}
+>> h['hoge']
+=> "empty"
+```
+
+シンボルを使うと=>を使わなくとも```{ name: "Michael Hartl", email: "michael@example.com" }```と書くことができる
+
+**```inspect```メソッドはリテラル表現にされた文字列をそのまま返す**  
+**しばしば``` p ```と略される**
+
+### 4.3.4 CSS revisited
+
+4.1で見たcssを読み込むコードに戻って文法を再度確かめる
+
+> is a call to this function. But there are several mysteries. First, where are the parentheses? In Ruby, they are optional, so these two are equivalent:
+
+メソッド呼び出し時の括弧は省略可能
+
+> When hashes are the last argument in a function call, the curly braces are optional, so these two are equivalent:
+
+引数のうち最後がHashだった場合は，{}を省略することが可能
+
+4.1のコードではkeyにハイフンが使われているため，これをシンボルとして宣言することは不可能
+
+メソッド呼び出しの途中の空白や改行は無視される
 
