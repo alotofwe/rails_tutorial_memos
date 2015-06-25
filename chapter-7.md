@@ -310,4 +310,13 @@ assert_no_differenceは，ブロック内を実行後に，User.countが変化�
 
 また，リダイレクト後にflashで文章を表示させる
 
-### 
+### 7.4.1 The finished signup form
+
+正しい入力内容が来た時，user_controller#createにて，showページにリダイレクトを行う旨を追記する
+
+actionでの操作後に別のページに移動させたい場合は，``` redirect_to ```を使う
+
+また，resourcesを宣言している場合，``` redirect_to @user ```は自動的に``` redirect_to user_url(@user) ```であると解釈する
+
+### 7.4.2 The flash
+
