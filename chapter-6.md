@@ -31,49 +31,49 @@ migrationsによって，Rubyを書くことに寄ってデータ構造を定義
 
 ### 6.1.1 Database migrations
 
-  > Our goal in this section is to create a model for users that won’t disappear quite so easily.
+> Our goal in this section is to create a model for users that won’t disappear quite so easily.
 
-  Modelを定義してデータを保存できるようにする
+Modelを定義してデータを保存できるようにする
 
-  Modelではattributesを宣言してgetterとsetterを生成する必要は無い
+Modelではattributesを宣言してgetterとsetterを生成する必要は無い
 
-  下の図のように，tableにcolumnsが定義されており，各データがrowとなる
+下の図のように，tableにcolumnsが定義されており，各データがrowとなる
 
-  ![Figure6.2](https://softcover.s3.amazonaws.com/636/ruby_on_rails_tutorial_3rd_edition/images/figures/users_table.png)
+![Figure6.2](https://softcover.s3.amazonaws.com/636/ruby_on_rails_tutorial_3rd_edition/images/figures/users_table.png)
 
-  データモデルを定義する
+データモデルを定義する
 
-  ``` rails generate model User name:string email:string ```
+``` rails generate model User name:string email:string ```
 
-  **キャメルケース，単数形でモデル名を宣言する (controllerは複数形であったことに注意)**
+**キャメルケース，単数形でモデル名を宣言する (controllerは複数形であったことに注意)**
 
-  その後，オプションとしてカラムの名前と型を宣言することができる
+その後，オプションとしてカラムの名前と型を宣言することができる
 
-  上のコマンドにより，マイグレーションファイルが生成される　
+上のコマンドにより，マイグレーションファイルが生成される　
 
-  ファイルでは，changeメソッドでDBが変更されることを宣言し，create_tableでテーブルを生成することを宣言している  
-  create_tableで複数形になっているのは，(例えば) userがテーブルにいくつも追加される，つまり「users」が入るテーブルであるため
+ファイルでは，changeメソッドでDBが変更されることを宣言し，create_tableでテーブルを生成することを宣言している  
+create_tableで複数形になっているのは，(例えば) userがテーブルにいくつも追加される，つまり「users」が入るテーブルであるため
 
-  オプションにカラムを含めると，マイグレーションファイルに自動でそれらを追加するスクリプトが追記される
+オプションにカラムを含めると，マイグレーションファイルに自動でそれらを追加するスクリプトが追記される
 
-  また，自動的にtimestampsを追加する行も追加される  
-  これによりcreated_atとupdated_atが追加される
+また，自動的にtimestampsを追加する行も追加される  
+これによりcreated_atとupdated_atが追加される
 
-  created_atにはデータの作成日時，updated_atにはデータの最終更新日時を入れる
+created_atにはデータの作成日時，updated_atにはデータの最終更新日時を入れる
 
-  ``` bundle exec rake db:migrate ```
+``` bundle exec rake db:migrate ```
 
-  DBにマイグレーションファイルの内容を反映させる
+DBにマイグレーションファイルの内容を反映させる
 
-  マイグレーションファイルにidについての記述がないが，Railsでは自動的にidカラムを追加し，これが主キーとなる
+マイグレーションファイルにidについての記述がないが，Railsでは自動的にidカラムを追加し，これが主キーとなる
 
-  もしマイグレーション後にミスが発覚したら，```  bundle exec rake db:rollback ```で元に戻す
+もしマイグレーション後にミスが発覚したら，```  bundle exec rake db:rollback ```で元に戻す
 
-  また，create_tableの代わりにdrop_tableを用いることで，テーブルを消すことも可能
+また，create_tableの代わりにdrop_tableを用いることで，テーブルを消すことも可能
 
-  migration up (db:migrateすること) とmigration down (db:rollbackすること) で違うことを行わせたい場合は，up, downメソッドを使う
+migration up (db:migrateすること) とmigration down (db:rollbackすること) で違うことを行わせたい場合は，up, downメソッドを使う
 
-  [Active Record Migrations — Ruby on Rails Guides](http://edgeguides.rubyonrails.org/active_record_migrations.html)
+[Active Record Migrations — Ruby on Rails Guides](http://edgeguides.rubyonrails.org/active_record_migrations.html)
 
 ### 6.1.2 The model file
 
@@ -81,50 +81,50 @@ Userのためのmodel fileが生成されている (ActiveRecort::Baseを継承�
 
 ### 6.1.3 Creating user objects
 
-  ``` rails console --sandbox ```
+``` rails console --sandbox ```
 
 このrails consoleの実行終了後に，ここで行ったDBへの操作を全てなかったことにする (roll back (undo) する)
 
-  --sandboxを付けなければ，DBへの変更はそのままアプリで使用しているDBに反映される
+--sandboxを付けなければ，DBへの変更はそのままアプリで使用しているDBに反映される
 
-  1. initialization hashを与えなければ全てのカラムがnilであること
-  2. 与えるとその値が反映されていること
-  3. .valid?で不正ではない (保存可能である) データかどうかを確認することができること，
+1. initialization hashを与えなければ全てのカラムがnilであること
+2. 与えるとその値が反映されていること
+3. .valid?で不正ではない (保存可能である) データかどうかを確認することができること，
 4. saveでtrueが返ってくること (保存できていること)
-  5. 保存するとid, created_at, updated_atに値が入ることを確認すること
-  6. user.columnで各カラムの値が返ること
-  7. saveしたデータはuser.destroyで削除することができること
+5. 保存するとid, created_at, updated_atに値が入ることを確認すること
+6. user.columnで各カラムの値が返ること
+7. saveしたデータはuser.destroyで削除することができること
 8. 削除されたデータもその後メモリに残ること (DBからは消えたが，代入した変数が生きている限り参照はできること)
 
-  を確認する
+を確認する
 
-  saveをすると実行されたSQL文が表示される
+saveをすると実行されたSQL文が表示される
 
-  saveの返り値は，保存が正常に完了した時はtrue，失敗し保存ができなかった時はfalseを返す
+saveの返り値は，保存が正常に完了した時はtrue，失敗し保存ができなかった時はfalseを返す
 
 ### 6.1.4 Finding user objects
 
-  保存したデータを検索する
+保存したデータを検索する
 
-  ``` User.find(1) ```
+``` User.find(1) ```
 
-  idが1のユーザを検索し，そのユーザのデータを返す
+idが1のユーザを検索し，そのユーザのデータを返す
 
-  存在しないidを指定した場合，``` ActiveRecord::RecordNotFound: Couldn't find User with ID=n ```という例外が発生する
+存在しないidを指定した場合，``` ActiveRecord::RecordNotFound: Couldn't find User with ID=n ```という例外が発生する
 
-  ``` User.find_by(email: "mhartl@example.com") ```
+``` User.find_by(email: "mhartl@example.com") ```
 
-  id以外で検索する時はfind_byを使用する
+id以外で検索する時はfind_byを使用する
 
-  find_byで指定した内容に当てはまる複数のユーザが存在した際は，一番若いidのものを返す
+find_byで指定した内容に当てはまる複数のユーザが存在した際は，一番若いidのものを返す
 
-  ``` User.first ```
+``` User.first ```
 
-  idが一番若いユーザを返す
+idが一番若いユーザを返す
 
-  ``` User.all ```
+``` User.all ```
 
-  全てのユーザを返す
+全てのユーザを返す
 
 ArrayではなくActiveRecode::Relationで返る (この後，また検索をつなげることなどができる)
 
