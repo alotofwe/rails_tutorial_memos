@@ -316,3 +316,52 @@ unique: trueで同じメールアドレスを許さない (DBレベルの制約)
 
 before_saveはコールバックの一種であり，saveする前に必ず呼び出される　
 今回はここで，emailを小文字に変換する
+
+## 6.3 Adding a secure password
+
+パスワードを保存するカラムを追加する
+
+secure passwordはパスワードを暗号化したものをDBに書き込む
+
+### 6.3.1 A hashed password
+
+model fileに``` has_secure_password```を追記するだけで使えるようになる
+
+has_secure_passwordは3つの機能をモデルに追加する
+
+**1. password_digestカラムが存在する場合，そこに暗号化されたパスワードを保存する**  
+**2. passwordとpassword_confirmationという2つの仮想属性を追加する (DBにはカラムとして存在しないがRails上で使える属性)**  
+**3. 与えられたパスワードが正しいものかどうかを返すauthenticateメソッドを追加する**  
+
+**passwordは入力されたパスワードの平文，password_confirmationは確認のためにもう1度入力されたパスワードの平文が入っている**
+
+**password_digestカラムは自動で追加されないため，以下のように手動で追加する**
+
+``` rails generate migration add_password_digest_to_users password_digest:string ```
+
+また，このサンプルアプリでは暗号化の際のハッシュ関数としてbcrypt gemを利用するため，Gemfileにそれを追記する
+
+### 6.3.2 User has secure password
+
+User modelにhas_secure_passwordを追記して，テストが落ちることを確認
+
+この場合はテストのUser.newに情報が足りないために起こるため，テストの方を変更する
+
+### 6.3.3 Minimum password standards
+
+攻撃者がパスワードを推測することを防ぐため，パスワードの最低限の長さをvalidationで指定する  
+また，空のパスワードも防止する
+
+まず落ちるテストを書き，以下のようにvalidationを指定する
+
+``` ruby
+validates :password, presence: true, length: { minimum: 6 }
+```
+
+### 6.3.4 Creating and authenticating a user
+
+ユーザ認証の挙動を確認する
+
+まだユーザ登録フォームを作っていないため，rails cからユーザを作り挙動を確かめてみる
+
+**user.authenticateは，間違ったパスワードが与えられた場合はfalse，正しければUserのデータを返す**
