@@ -171,3 +171,82 @@ $light-gray: #777;
 ```
 
 Less CSSは@，Sassは$を変数名の頭につける
+
+## 5.3 Layout links
+
+今こそリンクを有効にする時
+
+named routesを用いることで，pathをベタ書きせずに済む
+
+named routes一覧は``` bundle exec rake routes ```で確認可能 (各行の先頭に書かれている名前の後ろに_pathをつけたものがそれ)
+
+### 5.3.1 Contact page
+
+コンタクトページを追加する  
+
+まずgetするテストを書いて落ちることを確認
+
+その後通るようにコードを書き換える
+
+### 5.3.2 Rails routes
+
+rootについてはroot_pathとroot_urlが使用可能  
+root_pathは完全なURLではなく (host等が省略されている)，root_urlは完全なURLを返す
+
+``` ruby
+root_path -> '/'
+root_url  -> 'http://www.example.com/'
+```
+
+named routesを使用するには，routes.rbを以下の書式になおす必要がある
+
+``` ruby
+get 'url' => 'controller#action'
+```
+
+### 5.3.3 Using named routes
+
+5.1.1に書いたとおり，link_toの第二引数にnamed routesを指定することができる
+
+### 5.3.4 Layout link tests
+
+レイアウトファイルの各リンクが正しいURLを指しているかをテストする
+
+``` ruby
+assert_select "a[href=?]", about_path
+```
+
+は，?にabout_pathの結果を挿入する
+
+``` ruby
+assert_select "a[href=?]", root_path, count: 2
+```
+
+そのようなaタグがいくつあるかもチェックすることができる
+
+テストが通ることを確かめる
+
+## 5.4 User signup: A first step
+
+サインアップ (ユーザ登録) ページを作り始める
+
+> This is a first important step toward allowing users to register for our site; we’ll take the next step, modeling users, in Chapter 6, and we’ll finish the job in Chapter 7.
+
+ちょっとずつ改良して頑張りましょう
+
+### 5.4.1 Users controller
+
+```rails generate controller Users new```
+
+controllerを生成している
+
+controller名はキャメルケースで複数形，その後にオプションとしてactionをつける (複数可)
+
+自動的にテスト，コントローラ，ビューのファイルが生成される
+
+### 5.4.2 Signup URL
+
+routes.rbには自動的に追記されないため，手でnewアクション周りのルーティングを追記する
+
+```get 'signup'  => 'users#new'```と追記したため，named pathはsignup_pathとなる  
+Home Pageにこのパスを使ったlink_toを追記し，サインアップページに飛べるようにする
