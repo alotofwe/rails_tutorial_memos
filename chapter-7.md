@@ -177,3 +177,137 @@ form_forから生成されたhtmlのinputタグを見ると，name=""を適切�
 これは，Railsが各オブジェクトのクラスを把握することができることによる
 
 また，自動的にCSRF対策などがされていることがhtmlから分かる
+
+## 7.3 Unsuccessful signups
+
+フォームを作成したため，不正な入力を行った際に何が起こるかを把握する
+
+> In this section, we’ll create a signup form that accepts an invalid submission and re-renders the signup page with a list of errors, as mocked up in Figure 7.14.
+
+ここでは，不正な入力を受け取った際にユーザ登録フォームをもう一度表示し，どの部分の入力が不正かを表示させる．
+
+### 7.3.1 A working form
+
+form_forから生成されたformタグを見ると分かる通り，フォームが送信された後はuser controllerのcreateメソッドに飛ぶ (post /users)
+
+user controllerのcreateメソッドでは，paramsから入力されたデータを取り出し，それを元にユーザをsaveする  
+入力されたデータはparams[:user]に記憶されている
+
+その後，処理の成功/失敗に応じてif-elseで表示させるhtmlを分岐させる  
+ここでは，user.saveの返り値を用いるとよい
+
+実際に不正な入力でフォームから送信し，例外が発生していることを確認する
+
+デバッグ出力からparamsを確認すると，以下の様なものが渡されていることが分かる (一例)
+
+``` ruby
+"user" => { "name" => "Foo Bar",
+            "email" => "foo@invalid",
+            "password" => "[FILTERED]",
+            "password_confirmation" => "[FILTERED]"
+          }
+```
+
+**改めてinputタグのnameを確認してみると，user[email]はparamsのuser要素のemailというkeyのvalueとして入力内容を保存するという宣言になっていることが分かる**
+
+そして，入力はparamsに正しく渡されていることも確認することができる
+
+なぜこれでエラーが出るかというと，Rails 4.0からセキュリティ上の理由で，paramsをそのまま引数として渡すとエラーが出るようになっている
+
+### 7.3.2 Strong parameters
+
+ここでは，簡単にmass assignmentについて説明したあと，エラーの解消方法について説明を行う
+
+> The reason is that initializing the entire params hash is extremely dangerous—it arranges to pass to User.new all data submitted by a user.
+> In particular, suppose that, in addition to the current attributes, the User model included an admin attribute used to identify administrative users of the site.
+
+paramsから直接DBの変更を行おうとすると，危険な入力内容も受け入れることになる  
+特に管理者権限の有無を自由に変更される危険がある
+
+> The way to set such an attribute to true is to pass the value admin=’1’ as part of params[:user], a task that is easy to accomplish using a command-line HTTP client such as curl.
+
+例えば，入力内容として"admin='1'"と入力され，かつadminカラムが存在していた場合，adminカラムが1に書き換えられてしまう  
+
+> This allows us to specify which parameters are required and which ones are permitted.
+> In addition, passing in a raw params hash as above will cause an error to be raised, so that Rails applications are now immune to mass assignment vulnerabilities by default.
+
+これを防ぐためにstrong parametersというテクニックが導入され，これは更新するカラムを指定し，それ以外の更新を行わないというテクニックである．
+
+これは，以下のように実装する
+
+``` ruby
+params.require(:user).permit(:name, :email, :password, :password_confirmation)
+```
+
+上記のコードは，paramsのうちuser要素のみを使い，かつ:name, :email, :password, :password_confirmationカラムのみの更新を許すというものである
+
+簡単のために，対策方法をprivate methodにしておく
+
+privateはSection 8.4で詳しく説明される
+
+この対策を行った後，Web上で例外が発生したことが表示されないことを確認する
+
+### 7.3.3 Signup error messages
+
+Section 6.2.2で述べたとおり，保存時にエラーが発生した場合はerrors.full_messagesにエラー内容が格納される
+
+ここでは，その内容をWeb上に表示させ，その部分を部分テンプレート化する
+
+一般的に複数のコントローラから使用される可能性のあるviewは，sharedディレクトリの中に格納される
+
+errors.countでエラーの個数，errors.(any?|empty?)でエラーが発生しているかどうかを確認することができる
+
+**また，pluralizeヘルパを用いる事により，単数形/複数形の表示が簡単になる**
+
+``` ruby
+>> include ActionView::Helpers::TextHelper
+>> pluralize(1, "error")
+=> "1 error"
+>> pluralize(5, "error")
+=> "5 errors"
+>> pluralize(2, "woman")
+=> "2 women"
+>> pluralize(3, "erratum")
+=> "3 errata"
+```
+
+指定されたコードを書き，実際のWeb上でエラー内容が表示されることを確認する
+
+### 7.3.4 A test for invalid submission
+
+不正な入力を受け付けた際のintegration testを行う
+
+``` rails generate integration_test users_signup ```
+
+integration test fileを追加する
+
+> The main purpose of our test is to verify that clicking the signup button results in not creating a new user when the submitted information is invalid.
+
+get/post等のリクエストを行う際は，以下のように書く
+
+``` get target_path ```
+
+不正な入力をpostしてもユーザの数が増えないかどうかを確認するテストは，以下の様に書く
+
+``` ruby
+assert_no_difference 'User.count' do
+  post users_path, user: { name:  "",
+                           email: "user@invalid",
+                           password:              "foo",
+                           password_confirmation: "bar" }
+end
+```
+
+postの第二引数でparamsの内容を指定することができる
+
+assert_no_differenceは，ブロック内を実行後に，User.countが変化しないことを期待している
+
+テストが通ることを確認する
+
+## 7.4 Successful signups
+
+次は，正しい入力でpostされたとき，ユーザをDBに登録してshowページにリダイレクトをする機能を実装する
+
+また，リダイレクト後にflashで文章を表示させる
+
+### 
