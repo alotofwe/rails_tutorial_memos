@@ -110,3 +110,70 @@ emailをMD5で暗号化し，それをidとしてURLに含め，image_tagで表�
 モックアップではスライドバーが描かれていたため，それをviewに反映させていく
 
 Bootstrapで指定されているclassを使うことで，簡単に実装することができる
+
+## 7.2 Signup form
+
+登録フォームを作っていく
+
+> The goal of this section is to start changing this sad state of affairs by producing the signup form mocked up in Figure 7.11.
+
+殺風景な現在のフォーム画面をモックアップ通りに華やかにしていく
+
+先ほど作成したユーザの情報は必要がないため，下のコマンドでDBのデータを初期化する
+
+``` ruby
+bundle exec rake db:migrate:reset
+```
+
+DBをいじった場合は，サーバを再起動する必要があることがある
+
+### 7.2.1 Using form_for
+
+フォームを簡単に作成するため，form_forヘルパを用いる  
+form_forはActive Recordのデータを利用するため，controllerでそのデータを用意する
+
+``` ruby
+def new
+    @user = User.new
+end
+```
+
+その後，以下のようにform_forでフォームを生成していく  
+詳しい内容は，Section 7.2.2で詳しく扱う
+
+``` ruby
+<%= form_for(@user) do |f| %>
+      <%= f.label :name %>
+      <%= f.text_field :name %>
+
+      <%= f.label :email %>
+      <%= f.email_field :email %>
+
+      <%= f.label :password %>
+      <%= f.password_field :password %>
+
+      <%= f.label :password_confirmation, "Confirmation" %>
+      <%= f.password_field :password_confirmation %>
+
+      <%= f.submit "Create my account", class: "btn btn-primary" %>
+<% end %>
+```
+
+### 7.2.2 Signup form HTML
+
+form_forはいくつかのRuby・erbの機能を用いる
+
+特に，do ~ endで書かれており，ブロック内で使える変数としてfが宣言されている
+
+> As is usually the case with Rails helpers, we don’t need to know any details about the implementation, but what we do need to know is what the f object does: when called with a method corresponding to an HTML form element—such as a text field, radio button, or password field—f returns code for that element specifically designed to set an attribute of the @user object. In other words,
+
+fが何者であるかについて詳しく知る必要はないが，fを通じてcontrollerで宣言した@userを操作することができるようになる
+
+**type="email"はメールアドレスの内容に対して適切なアドバイス (不正な部分等) を表示し，type="password"は入力された文字を直接表示しない**
+
+form_forから生成されたhtmlのinputタグを見ると，name=""を適切に指定することによりフォームの初期値を設定していることが分かる (Section 7.3で詳しく述べる)
+
+また，formタグを見ると，@userのクラスに応じて適切にaction等が指定されていることが分かる  
+これは，Railsが各オブジェクトのクラスを把握することができることによる
+
+また，自動的にCSRF対策などがされていることがhtmlから分かる
