@@ -30,6 +30,7 @@ rails cでenvを指定する方法は以下のとおり
 ``` rails console test ```
 
 rails sでenvを指定する方法は以下のとおり
+
 ``` rails server --environment production ```
 
 db:migrate等，rakeでenvを指定する方法は以下のとおり
