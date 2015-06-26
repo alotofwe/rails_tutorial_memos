@@ -26,7 +26,7 @@ HTTPはステートレスなプロトコルであるため，前のリクエス�
 
 > In this section and Section 8.2, we’ll use the Rails method called session to make temporary sessions that expire automatically on browser close,2 and then in Section 8.4 we’ll add longer-lived sessions using another Rails method called cookies.
 
-以降，情報を一時的に保持しておくためにsessionメソッドを，永く保持しておくためにcookiesメソッドを使用する
+以降，情報を一時的に保持しておくためにsessionメソッドを，永く保持しておくためにcookieメソッドを使用する
 
 ログイン時にセッションを新しく作り，ログアウト時にそれを消去するようにする
 
@@ -134,6 +134,160 @@ flashのバグを直す前に，直ったかどうかを簡単に判定できる
 **TESTでどのテストを実行するかを指定することが可能**
 
 そして，flashのバグを解消するためには，flash.nowを使用する  
-flash.nowはリクエストに限定せず，renderなどの追加の処理が行われた場合にも内容を更新する
+**flash.nowはリクエストに限定せず，renderなどの追加の処理が行われた場合にも内容を更新する**
 
 先ほど落ちたテストが通ることを確認する
+
+## 8.2 Logging in
+
+ログインフォームの内容が適切だった際にログインを行う処理を書く
+
+この段階では，ログイン済みのユーザがブラウザを閉じた時に，自動的にログアウトとなる
+
+SessionsHelperを作り，そこにログイン機能などを追記することにより，Controllerの記述を便利にする
+
+SessionsHelperは，ApplicationController (全てのControllerの基礎となる) にincludeすることで，あらゆるcontroller内で利用できるようにする
+
+### 8.2.1 The log_in method
+
+ユーザがログインしているかどうかを判別するために，session[:user_id]にログインしているユーザのidを入れることにする (ログインしていなければnil)
+
+**sessionはcookiesに情報を，一時的に，暗号化して保存する**  
+**ブラウザが閉じられると，sessionに保存した内容は消去される**
+
+ログイン機能は何回も違う箇所で使われる可能性があるため，SessionsControllerに書いて使いまわせるようにする
+
+**sessionはcookieと違い暗号化されるため，session hijackingを防ぐことができる**
+
+sessions_controller#createで，作成したlog_inメソッドを使用してログインする
+
+### 8.2.2 Current user
+
+current_userメソッドで現在ログインしているユーザを取得し，@current_userに代入するようにする
+
+session[:user_id]を使用してfind_byする
+
+**findは存在しないidが渡された時に例外を吐き，ユーザがログインしていない時にsession[:user_id]はnilとなるため，例外が起こらないようにfind_byを使用する**
+
+メソッドは以下のようになる
+
+``` ruby
+def current_user
+  @current_user ||= User.find_by(id: session[:user_id])
+end
+```
+
+既に@current_userに情報が入っている状態でもう一度DBに調べに行くのは無駄なので，@current_userに既に値が入っていればそれを使い，そうでなければfind_byをする
+
+
+``` @current_user ||= User.find_by(id: session[:user_id]) ```は，``` @current_user = @current_user || User.find_by(id: session[:user_id]) ```に等しい
+このメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておく
+@current_userが真の場合 (nilでもfalseでもない場合) ，``` || ```の右は評価されない
+
+このメソッドをSessionsHelperに追記しておく
+
+### 8.2.3 Changing the layout links
+
+レイアウトファイルで表示させるリンクを，ログインしている時としていない時で変化させる
+
+ログインしている時はログアウトへのリンクを，そうでないときはログインのリンクを，ドロップダウンメニューで表示させる
+
+view内で，ログイン済み判定によりif-elseで内容を変えることで実装する  
+これの実装のため，ログイン済み判定を行うヘルパを追記する
+
+@current_userがnilではない (current_userメソッドがnilを返さない) 場合にログインしているため，ヘルパは以下のようになる
+
+``` ruby
+def logged_in?
+  !current_user.nil?
+end
+```
+
+レイアウトファイルでリンク先URLを仮に'#'としていたところに，適切なnamed routesで置き換える
+
+**ドロップダウンメニューを利用するため，application.jsに``` require bootstrap ```を追記する**
+
+### 8.2.4 Testing layout changes
+
+1. Visit the login path.
+2. Post valid information to the sessions path.
+3. Verify that the login link disappears.
+4. Verify that a logout link appears
+5. Verify that a profile link appears.
+
+をintegration testでチェックする
+
+このテストを行うためにはログインするべきユーザがテスト用DBに保存されている必要がある  
+Railsでは，テスト用DBに保存するデータの宣言にfixturesを使う
+
+ログイン用フォームには正しい値を入れる必要が有るため，テスト用DBに入れるデータも正しいものであるべき
+
+email, name, password_digestに正しい値を指定する
+
+**password_digestの指定には，``` BCrypt::Password.create(string, cost: cost) ```を使用する**
+
+**stringには暗号化したい文字列を，costにはどのくらい強力に暗号化を行うかを指定する (その分暗号化にかかる時間が長くなる)**
+
+本番環境ではある程度強力にする必要があるが，今回はテスト用データであるため，最小コストを指定する
+
+最小コストの指定方法は以下のとおり
+
+``` ruby
+cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
+                                              BCrypt::Engine.cost
+```
+
+本番環境では適切なコストを，そうでない場合は最小コストを使用する
+
+User Modelにクラスメソッドとしてパスワード生成メソッドを用意しておく
+
+``` ruby
+def User.digest(string)
+  cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
+                                                BCrypt::Engine.cost
+  BCrypt::Password.create(string, cost: cost)
+end
+```
+
+これを利用し，fixture fileは以下のようになる
+
+``` ruby
+michael:
+  name: Michael Example
+  email: michael@example.com
+  password_digest: <%= User.digest('password') %>
+```
+
+暗号化された状態から平文に戻したものを求めることはできないため，fixturesではパスワードは全て``` password ```で統一する
+
+fixturesに定義したデータは以下のようにして取り出す  
+
+``` ruby
+@user = users(:michael)
+```
+
+ログイン状態でlogin_pathへのリンクが存在しないことを，テストを通すことによって確かめる
+
+```
+$ bundle exec rake test TEST=test/integration/users_login_test.rb \
+>                       TESTOPTS="--name test_login_with_valid_information"
+```
+
+TESTOPTSで実行するメソッドの名前を指定することが可能
+
+### 8.2.5 Login upon signup
+
+ユーザ登録後に自動的にログイン状態になるようにする
+
+users_controller#createに，作ったばかりの@userでログインを行うように追記すればよい  
+sessions_controllerのlog_inメソッドを流用する
+
+**また，テスト内ではヘルパは使用できないため**，テスト用にログイン済み判定を行うようなテストを追記する
+
+``` ruby
+def is_logged_in?
+  !session[:user_id].nil?
+end
+```
+
+ユーザ登録後にログインしていることを確認するテストを追記し，通ることを確かめる
