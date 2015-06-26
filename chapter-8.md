@@ -181,7 +181,7 @@ end
 
 
 ``` @current_user ||= User.find_by(id: session[:user_id]) ```は，``` @current_user = @current_user || User.find_by(id: session[:user_id]) ```に等しい
-このメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておくこのメソッドをSessionsHelperに追記しておく
+
 @current_userが真の場合 (nilでもfalseでもない場合) ，``` || ```の右は評価されない
 
 このメソッドをSessionsHelperに追記しておく
@@ -291,3 +291,4 @@ end
 ```
 
 ユーザ登録後にログインしていることを確認するテストを追記し，通ることを確かめる
+
