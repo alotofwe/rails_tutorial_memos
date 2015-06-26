@@ -346,3 +346,68 @@ Railsにはflashというhashのように使える機能があり，それを使
 **post_via_redirectはpostのように使用し，postと処理完了後のredirectを行う**
 
 assert_templateで，現在どのviewが表示されているべきかをチェックする
+
+## 7.5 Professional-grade deployment
+
+> Although we started deploying our application in Chapter 3, this is the first time it will actually do something, so we’ll take this opportunity to make the deployment professional-grade.
+> In particular, we’ll add an important feature to the production application to make signup secure, and we’ll replace the default web server with one suitable for real-world use.
+
+production環境下での挙動をより良くする  
+特に，ユーザ登録をよりセキュアにするためにSSLを導入する
+
+### 7.5.1 SSL in production
+
+ユーザ登録時に送信されるメールアドレス，名前，パスワードはそのまま平文がネットワーク上に流れることになっており，これはとても危険
+
+なので，通信を暗号化するSSLを導入する
+
+SSLをproduction環境下で導入するには，production.rbに以下を追記 (もしくはコメントアウトを外す) する
+
+``` ruby
+Rails.application.configure do
+  .
+  .
+  .
+  # Force all access to the app over SSL, use Strict-Transport-Security,
+  # and use secure cookies.
+  config.force_ssl = true
+  .
+  .
+  .
+end
+```
+
+通常，SSL証明書の購入と設定を行う必要があるが，Herokuのものに便乗できるため，今回は必要ない
+
+### 7.5.2 Production webserver
+
+> By default, Heroku uses a pure-Ruby webserver called WEBrick, which is easy to set up and run but isn’t good at handling significant traffic. 
+
+通常，HerokuではWEBrickを使用しているが，これは通信が多くなった時に処理をするのが苦手
+
+> As a result, WEBrick isn’t suitable for production use, so we’ll replace WEBrick with Puma, an HTTP server that is capable of handling a large number of incoming requests.
+
+production環境下ではWEBrickは適していないため，WEBrick with Pumaに切り替えて大量のリクエストの処理に耐えられるようにする
+
+> Web applications that process concurrent requests make more efficient use of dyno resources than those that only process one request at a time. Puma is a webserver that competes with Unicorn and allows you to process concurrent requests.
+
+> Puma uses threads, in addition to worker processes, to make more use of available CPU. You can only utilize threads in Puma if your entire code-base is thread safe. Otherwise, you can still use Puma, but must only scale out through worker processes.
+
+Pumaは，スレッドを使うことで同時にいくつもの処理を行うようにさせる
+
+[Deploying Rails Applications with the Puma Web Server | Heroku Dev Center](https://devcenter.heroku.com/articles/deploying-rails-applications-with-the-puma-web-server)
+
+Pumaを使うため，Gemfileのproductionにpuma gemを追記し，Gemfile.lockの更新のために``` bundle install ```を行う
+
+次に，ドキュメントに書いてある通りにconfig/puma.rbを追加する
+
+また，Heroku上でPumaをproductionで動かすために，Procfileを追加する  
+Procfileはアプリのルートディレクトリに追加する
+
+デプロイしてhttpsになっていることを確かめる
+
+### 7.5.3 Ruby version number
+
+デプロイする時，GemfileにRubyのバージョンが明示的に指定されていないことについてWARNINGが表示されているはず
+
+今回のサンプルアプリレベルでは必要ないが，実際に自分のアプリを作る際は，互換性の確保のためにバージョンをしていすることをおすすめする
