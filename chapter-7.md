@@ -361,7 +361,7 @@ production環境下での挙動をより良くする
 
 なので，通信を暗号化するSSLを導入する
 
-SSLをproduction環境下で導入するには，production.rbに以下を追記 (もしくはコメントアウトを外す) する
+**SSLをproduction環境下で導入するには，production.rbに以下を追記 (もしくはコメントアウトを外す) する**
 
 ``` ruby
 Rails.application.configure do
@@ -377,7 +377,7 @@ Rails.application.configure do
 end
 ```
 
-通常，SSL証明書の購入と設定を行う必要があるが，Herokuのものに便乗できるため，今回は必要ない
+**通常，SSL証明書の購入と設定を行う必要があるが，Herokuのものに便乗できるため，今回は必要ない**
 
 ### 7.5.2 Production webserver
 
@@ -387,13 +387,13 @@ end
 
 > As a result, WEBrick isn’t suitable for production use, so we’ll replace WEBrick with Puma, an HTTP server that is capable of handling a large number of incoming requests.
 
-production環境下ではWEBrickは適していないため，WEBrick with Pumaに切り替えて大量のリクエストの処理に耐えられるようにする
+**production環境下ではWEBrickは適していないため，WEBrick with Pumaに切り替えて大量のリクエストの処理に耐えられるようにする**
 
 > Web applications that process concurrent requests make more efficient use of dyno resources than those that only process one request at a time. Puma is a webserver that competes with Unicorn and allows you to process concurrent requests.
 
 > Puma uses threads, in addition to worker processes, to make more use of available CPU. You can only utilize threads in Puma if your entire code-base is thread safe. Otherwise, you can still use Puma, but must only scale out through worker processes.
 
-Pumaは，スレッドを使うことで同時にいくつもの処理を行うようにさせる
+**Pumaは，スレッドを使うことで同時にいくつもの処理を行うようにさせる**
 
 [Deploying Rails Applications with the Puma Web Server | Heroku Dev Center](https://devcenter.heroku.com/articles/deploying-rails-applications-with-the-puma-web-server)
 
@@ -410,4 +410,4 @@ Procfileはアプリのルートディレクトリに追加する
 
 デプロイする時，GemfileにRubyのバージョンが明示的に指定されていないことについてWARNINGが表示されているはず
 
-今回のサンプルアプリレベルでは必要ないが，実際に自分のアプリを作る際は，互換性の確保のためにバージョンをしていすることをおすすめする
+**今回のサンプルアプリレベルでは必要ないが，実際に自分のアプリを作る際は，互換性の確保のためにバージョンをしていすることをおすすめする**
