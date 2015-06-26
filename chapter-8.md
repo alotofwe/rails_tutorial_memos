@@ -282,7 +282,7 @@ TESTOPTSで実行するメソッドの名前を指定することが可能
 users_controller#createに，作ったばかりの@userでログインを行うように追記すればよい  
 sessions_controllerのlog_inメソッドを流用する
 
-**また，テスト内ではヘルパは使用できないため**，テスト用にログイン済み判定を行うようなテストを追記する
+**また，テスト内では実際のアプリ内で使っているヘルパは使用できないため**，テスト用にログイン済み判定を行うようなテストを追記する
 
 ``` ruby
 def is_logged_in?
@@ -292,3 +292,30 @@ end
 
 ユーザ登録後にログインしていることを確認するテストを追記し，通ることを確かめる
 
+## 8.3 Logging out
+
+ログアウトを実装する
+
+ログアウトをするとは，session[:user_id]に保存されているuser_idを削除し，nilに戻すこと  
+また，@current_userの内容もnilに戻す必要がある
+
+また，ヘルパにログイン処理を書いたように，ログアウト処理も追記する
+
+``` ruby
+def log_out
+  session.delete(:user_id)
+  @current_user = nil
+end
+```
+
+このヘルパを利用して，sessions_controller#destroyにログアウト処理を書く  
+ログアウト後はroot_urlにリダイレクトするようにする
+
+``` ruby
+def destroy
+  log_out
+  redirect_to root_url
+end
+```
+
+また，ログアウト後にきちんとログイン状態が解除されており，再度ログインボタンが表示されていることをテストで確認し，通ることを確かめる
