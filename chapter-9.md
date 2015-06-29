@@ -199,9 +199,9 @@ end
 
 create!メソッドは，作成・保存に失敗した際に例外を投げる
 
-``` bundle exec rake db:migrate:reset
-bundle exec rake db:seed
-```
+``` bundle exec rake db:migrate:reset ```
+
+``` bundle exec rake db:seed ```
 
 DBを初期化して，seedを入れる
 
