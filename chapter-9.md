@@ -147,3 +147,108 @@ request.urlで，リクエストされたURLを取得する
 store_locationメソッドは，before filterでログインしているかをチェックする際のメソッドに追記する
 
 redirect_back_orメソッドは，session_controller#createで新たなセッションが作られた際のcreateメソッドに追記し，記憶させていたURLにリダイレクトさせる
+
+## 9.3 Showing all users
+
+ユーザ一覧を表示するindexアクションを用意する
+
+実際のサービスでユーザが多くなってしまった時に備え，サンプルである程度ユーザを作成し，pagenateを使うことにより表示に耐えられるようにする
+
+### 9.3.1 Users index
+
+まず，ログインをしていないユーザが，ユーザ一覧を閲覧できないようにする (before actionのonlyにindexを追記するだけ)
+
+表示させるユーザは，全てのユーザを取得するには，User.allを使う (これだとユーザが多くなるにつれ処理が重くなるため，後に改善する)
+
+viewは，@users.eachで各ユーザの情報を表示する
+
+CSSで整え，headerにusers/indexへのリンクも追記し，テストが通ることを確認する
+
+### 9.3.2 Sample users
+
+たくさんのサンプルユーザを作ることで，アプリの環境を本番に近くする
+
+仮のデータを簡単に生成することができるfaker gemがあるため，それを使用する
+
+(Faker-japanese gemもあり，日本語の文を生成することもできる )
+
+[Ruby - Fakerでダミーデータを作成 - Qiita](http://qiita.com/torshinor/items/ef2141d6f3828cf0054f)
+
+Gemfileにfakerを追記して，bundle install
+
+使い方は[fakerのREADME](https://github.com/stympy/faker)参照
+
+db/seed.rb内にて，timesメソッドを活用して100名のユーザを作成する
+
+``` ruby
+User.create!(name:  "Example User",
+             email: "example@railstutorial.org",
+             password:              "foobar",
+             password_confirmation: "foobar")
+
+99.times do |n|
+  name  = Faker::Name.name
+  email = "example-#{n+1}@railstutorial.org"
+  password = "password"
+  User.create!(name:  name,
+               email: email,
+               password:              password,
+               password_confirmation: password)
+end
+```
+
+create!メソッドは，作成・保存に失敗した際に例外を投げる
+
+``` bundle exec rake db:migrate:reset
+bundle exec rake db:seed
+```
+
+DBを初期化して，seedを入れる
+
+### 9.3.3 Pagination
+
+ユーザが増えた時に1つのページに全てのユーザを表示させようとすると，ものすごくページが重くなる
+
+そのため，1ページにつき30ユーザしか表示させず，ページを操作することができるようにする
+
+これの実現のために便利なwill_paginate gemと，そのデザインのためのbootstrap-will_paginage gemがあるので，Gemfileに追記してbundle installをする
+
+使い方は
+
+**1. viewで``` <%= will_paginate %> ```を追記することにより，ページ送りができるようなインタフェースを構築する**  
+**2. controllerで，paginationの対象とする変数に ```@users = User.paginate(page: params[:page]) ```と指定する**
+
+2により，params[:page]の値によって@usersに入るユーザのオフセットや量が変化する(page=1なら1~30番目のユーザ，page=2なら31~60番目のユーザが入る)
+
+実際にWeb上で動くことを確かめる
+
+### 9.3.4 Users index test
+
+users/indexを書いたので，そのテストを書く
+
+pagenateをテストするにはある程度の量のテストユーザが必要になるため，fixturesにその旨，以下のように追記する
+
+``` ruby
+<% 30.times do |n| %>
+user_<%= n %>:
+  name:  <%= "User #{n}" %>
+  email: <%= "user-#{n}@example.com" %>
+  password_digest: <%= User.digest('password') %>
+<% end %>
+```
+
+**fixturesではerbを使用することができる**
+
+integration testファイルを追加し，paginateで表示されるべきユーザが全てviewで表示されていることを，assert_selectで確かめる
+
+テストが通ることを確かめる
+
+### 9.3.5 Partial refactoring
+
+ユーザの表示は様々な箇所で使いまわす可能性があるため，users/indexに書いているユーザ表示を部分テンプレート化する
+
+いつも通り，``` <%= render user %> ```とし，部分テンプレートのファイルははじめに_をつけ，その後にrenderで指定している名前にする
+
+**また，renderにusersを指定し，userのための部分テンプレートが存在した場合，Railsは繰り返し部分テンプレートを表示させると解釈するため，@users.eachも必要がなくなる**
+
+リファクタリング後，テストが通ることを確かめる
