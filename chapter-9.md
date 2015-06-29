@@ -252,3 +252,22 @@ integration testファイルを追加し，paginateで表示されるべきユ�
 **また，renderにusersを指定し，userのための部分テンプレートが存在した場合，Railsは繰り返し部分テンプレートを表示させると解釈するため，@users.eachも必要がなくなる**
 
 リファクタリング後，テストが通ることを確かめる
+
+## 9.4 Deleting users
+
+indexを作成したため，RESTfulへの次のステップとしてdestroyを実装する
+
+> In this section, we’ll add links to delete users, as mocked up in Figure 9.13, and define the destroy action necessary to accomplish the deletion
+
+ユーザを消すためのリンクを作成し，実際に削除を行うためにdestroyアクションを実装する
+
+> But first, we’ll create the class of administrative users, or admins, authorized to do so
+
+ただし全てのユーザ (もしくは，全てのログイン済みユーザ) が削除可能だとサービスの機能として危険であるため，管理者であるかどうかのカラムをUser Modelに追加し，管理者のみ削除が可能にする
+
+### 9.4.1 Administrative users
+
+boolean型のadminカラムを，User Modelに追加する  
+この際，自動でadmin?メソッドが追加され，これによりあるユーザが管理者であるかどうかを判定する (trueであれば管理者)
+
+カラム名の末尾に?がついたメソッドはいつでも自動で生成され，そのカラムの値が0, false, nilであればfalse，そうでなければfalseが返る
