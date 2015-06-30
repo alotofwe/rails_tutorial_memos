@@ -271,3 +271,50 @@ boolean型のadminカラムを，User Modelに追加する
 この際，自動でadmin?メソッドが追加され，これによりあるユーザが管理者であるかどうかを判定する (trueであれば管理者)
 
 カラム名の末尾に?がついたメソッドはいつでも自動で生成され，そのカラムの値が0, false, nilであればfalse，そうでなければfalseが返る
+
+生成されたmigration fileに，default: falseを指定して，何も指定されなければ自動的にfalseになるようにする
+
+また，admin用ユーザを作成するため，seed.rbにadmin: trueのものを追記する (seedを再び入れることに注意)
+
+adminはリクエストにより操作する予定がない (あってはいけない) ため，strong params対策のpermitに含めない
+
+### 9.4.2 The destroy action
+
+実際にactionを書いて動くようにしていく
+
+まず，viewのほうに，current_user.admin? == true かつ !current_user?(user)であれば，押すとdeleteアクションに飛ぶようなボタンを用意する
+
+!current_user?(user)は，自分自身を消さないための処理
+
+> Web browsers can’t send DELETE requests natively, so Rails fakes them with JavaScript. This means that the delete links won’t work if the user has JavaScript disabled.
+
+PATCHと同様DELETEもブラウザでは標準サポートされていないため，Rails側でJavaScriptを使うことにより偽装する
+
+[link_to に :method =&gt; :delete を指定した時の動作 - happy lie, happy life](http://d.hatena.ne.jp/spitfire_tree/20120323/1332477590)
+
+users_controllerにdestroyを追記して，削除後はusers_urlにリダイレクトするようにする
+
+**ただし，ブラウザ側で管理者のみがdeleteボタンを押せるように工夫をしていても，攻撃者が直接コマンドラインからDELETEリクエストを叩く可能性があるため，ここでもbefore_actionで管理者かどうかをチェックする**
+
+### 9.4.3 User destroy tests
+
+Userが消えるかどうかのテストを書く
+
+ユーザを消すのは (場合によっては) 危険な処理なので，テストをきちんと書いて間違いが起こらないようにする
+
+また，ユーザを削除する処理は管理者しか行えないため，user fixturesに1名管理者を作る (adminカラムをtrueにする)
+
+> first, users who aren’t logged in should be redirected to the login page  
+
+> second, users who are logged in but who aren’t admins should be redirected to the Home page
+
+まず，ログインをしていない人と，ログインはしているが管理者ではないユーザがdestroyを使用とした時に，適切な場所にリダイレクトされるかをテストする
+
+次に，管理者で
+
+1. deleteボタンがviewに表示されているか
+2. ``` delete user_path(user) ```を実行すると，ユーザ数が1減るか
+
+をテストする
+
+テストが通ることを確かめる
