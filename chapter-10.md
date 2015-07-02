@@ -248,3 +248,15 @@ end
 また，sessions_controller#craete (ログイン時) で，userがアクティブであるかどうかをチェックし，アクティブであればログイン処理を，そうでなければflashにアクティブではない旨のメッセージを追加し，root_urlにリダイレクトさせる．
 
 ### 10.1.4 Activation test and refactoring
+
+activationに対するintegration testを行う
+
+メールを何通送ったかのカウントをリセットするため，setupで``` ActionMailer::Base.deliveries.clear ```を実行し，以下のようにしてテスト内にてメール送信が完了しているかを調べる
+
+``` ruby
+assert_equal 1, ActionMailer::Base.deliveries.size
+```
+
+また，現在Controller内にある「update_attributeを更新してアクティブにする」機能と「アクティベーションメールを送信する」機能に該当するコードを，User Modelにメソッドとして移動させる
+
+その際，user.の部分は削除してよい (userがModel内ではselfになり，selfは省略可能)
