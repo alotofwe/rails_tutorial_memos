@@ -54,17 +54,18 @@ authenticated?メソッドを色々なtokenを用いて行えるように拡張�
 
 activatedは，デフォルトではfalseにする
 
-** ユーザが登録フォームでsubmitを押した時，userがcreateされる直前にactivation tokenとactivation digestを発行したい (user登録とactivation token保存で2回DBに問合わせが発生するため，それらを1回におさめたい) **  
-** そのために，before_saveメソッドを用いる **
+**ユーザが登録フォームでsubmitを押した時，userがcreateされる直前にactivation tokenとactivation digestを発行したい (user登録とactivation token保存で2回DBに問合わせが発生するため，それらを1回におさめたい)** 
+
+**そのために，before_saveメソッドを用いる**
 
 classの途中にprivateと打ち，その下の行にまたメソッドを書き始めた場合，それはprivate methodとなる
 
 メソッドをprivateとして宣言することで，外部から呼び出すことのできないメソッドとなる
 
-** > つまり、外部（s2）からs1のメソッドを呼び出そうとするなら、  **  
-** > s1.s1_privateのようにs1というレシーバをつける必要があるが（ルール2）、  **  
-** > （s1の）privateメソッドはレシーバを付けて呼び出す事を許してくれない（ルール1）。  **  
-** > 結果として、privateメソッドは外部から呼び出すことが出来ない。 **  
+> つまり、外部（s2）からs1のメソッドを呼び出そうとするなら、
+> s1.s1_privateのようにs1というレシーバをつける必要があるが（ルール2）、
+> （s1の）privateメソッドはレシーバを付けて呼び出す事を許してくれない（ルール1）。
+> 結果として、privateメソッドは外部から呼び出すことが出来ない。
 
 [[Ruby] privateメソッドの本質とそれを理解するメリット - Qiita](http://qiita.com/kidach1/items/055021ce42fe2a49fd66)
 
@@ -88,15 +89,15 @@ fixturesのユーザは，全てactivatedをtrueにしておき，seedを入れ�
 
 Action Mailerライブラリを用いて，users_controller.createが実行された (そして成功した) と同時にメールを送るようにする
 
-** 以下でmailerを追加する **
+**以下でmailerを追加する**
 
 ```  rails generate mailer UserMailer account_activation password_reset ```
 
 同時に，account_activation, password_resetメソッドを追加している
 
-** mailerを上の方法で作成することにより自動的に，plain text用のview (送信するメールの本文) と，html用のviewが作成されている **
+**mailerを上の方法で作成することにより自動的に，plain text用のview (送信するメールの本文) と，html用のviewが作成されている**
 
-** また，テンプレートファイルにmailer用のテンプレートも追加されている (app/views/layouts/) **
+**また，テンプレートファイルにmailer用のテンプレートも追加されている (app/views/layouts/)**
 
 また，今までのviewと同様，view内でインスタンス変数を利用して表示をすることができる
 
@@ -127,7 +128,7 @@ mailはパラメータとして，tokenはbase64でエンコードしたもの�
 
 このURLをメールの本文に，erbで埋め込む
 
-** メールのviewがどうなっているかを目で確認するため，Railsにはemail previews機能を使うことができ，これにより文面をWeb上で確認することができる **
+**メールのviewがどうなっているかを目で確認するため，Railsにはemail previews機能を使うことができ，これにより文面をWeb上で確認することができる**
 
 email previewsを利用するには，config/environments/development.rbにて
 
@@ -157,11 +158,11 @@ end
 
 ```
 
-** mail previewsのURLを訪れると (例: /host/rails/mailers/user_mailer/account_activation) メールのプレビューが，textとhtmlの両方とも確認可能になっている **
+**mail previewsのURLを訪れると (例: /host/rails/mailers/user_mailer/account_activation) メールのプレビューが，textとhtmlの両方とも確認可能になっている**
 
 また，視認と同時にテストも書く
 
-ただし，メールアドレスをassert_matchするときは，** CGI::escape(user.email)でエスケープをしたものを探す **
+ただし，メールアドレスをassert_matchするときは，**CGI::escape(user.email)でエスケープをしたものを探す**
 
 また，テストのためにconfig/environments/test.rbでも，development.rbと同様にhostの指定を行う．
 
@@ -176,7 +177,7 @@ if @user.save
 
 ログイン後にshowに飛ぶテストが落ちるが，このテストはもう古くなったため，動かないようにコメントアウトもしくは消しておく
 
-** developmentでは実際にメールが送信されることはないが，rails serverのログに表示されるため，そのURLをコピペして閲覧する **  
+**developmentでは実際にメールが送信されることはないが，rails serverのログに表示されるため，そのURLをコピペして閲覧する** 
 閲覧可能なことを確認する (まだアクティブ化はされない)
 
 ### 10.1.3 Activating the account
@@ -298,9 +299,9 @@ activation同様，reset用digestをDBに保存するため，Userにreset_diges
 
 > If we instead stored an unhashed token, an attacker with access to the database could send a reset request to the user’s email address and then use the token and email to visit the corresponding password reset link, thereby gaining control of the account.
 
-** もし，tokenを暗号化せずに扱うと，パスワードリセット時にそれと比較していると，DBのアクセス権を得た攻撃者が悪用してユーザの権限を奪ってしまえるようになる (リセット要求を発行して，すぐに該当URLにアクセスする) **
+**もし，tokenを暗号化せずに扱うと，パスワードリセット時にそれと比較していると，DBのアクセス権を得た攻撃者が悪用してユーザの権限を奪ってしまえるようになる (リセット要求を発行して，すぐに該当URLにアクセスする)**
 
-** また，更なる対策のために，パスワードリセットに有効期限を設ける **
+**また，更なる対策のために，パスワードリセットに有効期限を設ける**
 
 migration fileからカラムを追加し，db:migrateを行う
 
@@ -336,7 +337,7 @@ activation同様，mailerを生成し，件名や本文を指定し，送信用�
 
 新しいパスワードを設定するほうのformを書く
 
-** f.hidden_fieldを使用すると，params[form_forで指定された名前][hidden_fieldで指定された名前]で渡されるが，hidden_field_tagを使用すると，params[hidden_fieldで指定された名前]で渡される **
+**f.hidden_fieldを使用すると，params[form_forで指定された名前][hidden_fieldで指定された名前]で渡されるが，hidden_field_tagを使用すると，params[hidden_fieldで指定された名前]で渡される**
 
 今回はemailに関しては後者を使用したいため，hidden_field_tagでフォーム内容に仕込む
 
