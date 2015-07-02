@@ -54,17 +54,17 @@ authenticated?メソッドを色々なtokenを用いて行えるように拡張�
 
 activatedは，デフォルトではfalseにする
 
-ユーザが登録フォームでsubmitを押した時，userがcreateされる直前にactivation tokenとactivation digestを発行したい (user登録とactivation token保存で2回DBに問合わせが発生するため，それらを1回におさめたい)  
-そのために，before_saveメソッドを用いる
+**ユーザが登録フォームでsubmitを押した時，userがcreateされる直前にactivation tokenとactivation digestを発行したい (user登録とactivation token保存で2回DBに問合わせが発生するため，それらを1回におさめたい)**  
+**そのために，before_saveメソッドを用いる**
 
 classの途中にprivateと打ち，その下の行にまたメソッドを書き始めた場合，それはprivate methodとなる
 
 メソッドをprivateとして宣言することで，外部から呼び出すことのできないメソッドとなる
 
-> つまり、外部（s2）からs1のメソッドを呼び出そうとするなら、  
-> s1.s1_privateのようにs1というレシーバをつける必要があるが（ルール2）、  
-> （s1の）privateメソッドはレシーバを付けて呼び出す事を許してくれない（ルール1）。  
-> 結果として、privateメソッドは外部から呼び出すことが出来ない。
+**> つまり、外部（s2）からs1のメソッドを呼び出そうとするなら、  **  
+**> s1.s1_privateのようにs1というレシーバをつける必要があるが（ルール2）、  **  
+**> （s1の）privateメソッドはレシーバを付けて呼び出す事を許してくれない（ルール1）。  **  
+**> 結果として、privateメソッドは外部から呼び出すことが出来ない。**  
 
 [[Ruby] privateメソッドの本質とそれを理解するメリット - Qiita](http://qiita.com/kidach1/items/055021ce42fe2a49fd66)
 
@@ -88,15 +88,15 @@ fixturesのユーザは，全てactivatedをtrueにしておき，seedを入れ�
 
 Action Mailerライブラリを用いて，users_controller.createが実行された (そして成功した) と同時にメールを送るようにする
 
-以下でmailerを追加する
+**以下でmailerを追加する**
 
 ```  rails generate mailer UserMailer account_activation password_reset ```
 
 同時に，account_activation, password_resetメソッドを追加している
 
-mailerを上の方法で作成することにより自動的に，plain text用のview (送信するメールの本文) と，html用のviewが作成されている
+**mailerを上の方法で作成することにより自動的に，plain text用のview (送信するメールの本文) と，html用のviewが作成されている**
 
-また，テンプレートファイルにmailer用のテンプレートも追加されている (app/views/layouts/)
+**また，テンプレートファイルにmailer用のテンプレートも追加されている (app/views/layouts/)**
 
 また，今までのviewと同様，view内でインスタンス変数を利用して表示をすることができる
 
@@ -127,7 +127,7 @@ mailはパラメータとして，tokenはbase64でエンコードしたもの�
 
 このURLをメールの本文に，erbで埋め込む
 
-メールのviewがどうなっているかを目で確認するため，Railsにはemail previews機能を使うことができ，これにより文面をWeb上で確認することができる
+**メールのviewがどうなっているかを目で確認するため，Railsにはemail previews機能を使うことができ，これにより文面をWeb上で確認することができる**
 
 email previewsを利用するには，config/environments/development.rbにて
 
@@ -157,7 +157,7 @@ end
 
 ```
 
-mail previewsのURLを訪れると (例: /host/rails/mailers/user_mailer/account_activation) メールのプレビューが，textとhtmlの両方とも確認可能になっている
+**mail previewsのURLを訪れると (例: /host/rails/mailers/user_mailer/account_activation) メールのプレビューが，textとhtmlの両方とも確認可能になっている**
 
 また，視認と同時にテストも書く
 
@@ -176,7 +176,7 @@ if @user.save
 
 ログイン後にshowに飛ぶテストが落ちるが，このテストはもう古くなったため，動かないようにコメントアウトもしくは消しておく
 
-developmentでは実際にメールが送信されることはないが，rails serverのログに表示されるため，そのURLをコピペして閲覧する  
+**developmentでは実際にメールが送信されることはないが，rails serverのログに表示されるため，そのURLをコピペして閲覧する**  
 閲覧可能なことを確認する (まだアクティブ化はされない)
 
 ### 10.1.3 Activating the account
@@ -245,7 +245,7 @@ end
 
 変更後，account_activations_controller#editでも利用し，authenticated?メソッドがtrueであればuser.activatedをtrueに，user.activated_atを現在時刻にしてDBのデータを更新する
 
-また，sessions_controller#craete (ログイン時) で，userがアクティブであるかどうかをチェックし，アクティブであればログイン処理を，そうでなければflashにアクティブではない旨のメッセージを追加し，root_urlにリダイレクトさせる．
+また，sessions_controller#create (ログイン時) で，userがアクティブであるかどうかをチェックし，アクティブであればログイン処理を，そうでなければflashにアクティブではない旨のメッセージを追加し，root_urlにリダイレクトさせる．
 
 ### 10.1.4 Activation test and refactoring
 
@@ -260,3 +260,99 @@ assert_equal 1, ActionMailer::Base.deliveries.size
 また，現在Controller内にある「update_attributeを更新してアクティブにする」機能と「アクティベーションメールを送信する」機能に該当するコードを，User Modelにメソッドとして移動させる
 
 その際，user.の部分は削除してよい (userがModel内ではselfになり，selfは省略可能)
+
+## 10.2 Password reset
+
+メール送信にて，ユーザがパスワードを忘れてしまった際のリセットを実装する
+
+> The beginning is different, though; unlike account activation, implementing password resets requires both a change to one of our views and two new forms (to handle email and new password submission).
+
+パスワードリセットはリセット用フォームが必要になる
+
+リセットまでの過程は以下のようになる
+
+> 1. When a user requests a password reset, find the user by the submitted email address.
+> 2. If the email address exists in the database, generate a reset token and corresponding reset digest.
+> 3. Save the reset digest to the database, and then send an email to the user with a link containing the reset token and user’s email address.
+> 4. When the user clicks the link, find the user by email address, and then authenticate the token by comparing to the reset digest.
+> 5. If authenticated, present the user with the form for changing the password.
+
+1. パスワードリセットが (emailの指定と共に) 要求されると，emailから該当ユーザを検索する
+2. もしDBに指定されたuser.emailがあれば，リセット用のtokenとdigestを生成する
+3. digestはDBに保存し，tokenが含まれたリンクが記載されているメールを，指定されたアドレスに送信する
+4. メールのリンク先に (emailの情報とともに) アクセスされた時に，emailから該当ユーザを検索し，tokenとdigestの関係がとれているかをチェックする
+5. tokenとdigestの関係がとれていれば，フォームから新しいパスワードを入力してもらい，変更を行う
+
+### 10.2.1 Password resets resource
+
+``` rails generate controller PasswordResets new edit --no-test-framework ```
+
+activation同様，password_resetsもModelを作らずControllerのみ生成する
+
+今回はcreate，updateの前にフォームを表示する必要があるため，new, create, edit,updateアクションを使用する
+
+ログイン画面に，"forgot password"リンクを生成し，パスワードリセット用のフォームに飛べるようにする
+
+activation同様，reset用digestをDBに保存するため，Userにreset_digestカラムを追加する  
+また，最後にリセットのためのメールを送信した日時を保存するため，Userにreset_sent_atカラムも追加する (リセットの有効期限を確認するために使用する)
+
+> If we instead stored an unhashed token, an attacker with access to the database could send a reset request to the user’s email address and then use the token and email to visit the corresponding password reset link, thereby gaining control of the account.
+
+**もし，tokenを暗号化せずに扱うと，パスワードリセット時にそれと比較していると，DBのアクセス権を得た攻撃者が悪用してユーザの権限を奪ってしまえるようになる (リセット要求を発行して，すぐに該当URLにアクセスする)**
+
+**また，更なる対策のために，パスワードリセットに有効期限を設ける**
+
+migration fileからカラムを追加し，db:migrateを行う
+
+### 10.2.2 Password resets controller and form
+
+form_forを使い，リセット要求用フォームを作成する
+
+sessionの時と同様，Modelが無いため，form_forはModel.newしたものではなく，keyとなる名前とpost先urlを指定する方法を使う
+
+viewを書いた後，password_reset_controller#createを追記する
+
+> 2. もしDBに指定されたuser.emailがあれば，リセット用のtokenとdigestを生成する
+> 3. digestはDBに保存し，tokenが含まれたリンクが記載されているメールを，指定されたアドレスに送信する
+
+を行う
+
+登録されていないemailが指定された場合は，その旨のエラー文が表示されてformに戻されるのを確認する
+
+### 10.2.3 Password reset mailer method
+
+activation同様，mailerを生成し，件名や本文を指定し，送信用メソッドをUser Modelに追記する
+
+また，previewにも追記して視認可能にする
+
+また，account_activationと同様，テストも書く (内容はほぼ同じ)
+
+テストが通ることを確認し，また実際の文面を (rails serverのログから) 確認する
+
+### 10.2.4 Resetting the password
+
+> 4. メールのリンク先に (emailの情報とともに) アクセスされた時に，emailから該当ユーザを検索し，tokenとdigestの関係がとれているかをチェックする
+> 5. tokenとdigestの関係がとれていれば，フォームから新しいパスワードを入力してもらい，変更を行う
+
+新しいパスワードを設定するほうのformを書く
+
+**f.hidden_fieldを使用すると，params[form_forで指定された名前][hidden_fieldで指定された名前]で渡されるが，hidden_field_tagを使用すると，params[hidden_fieldで指定された名前]で渡される**
+
+今回はemailに関しては後者を使用したいため，hidden_field_tagでフォーム内容に仕込む
+
+editでは，activation同様，params[:email]で@userを検索し，activated?メソッドでdigestとtokenの関係がとれているかを確かめる
+
+updateでは，パスワードが空もしくは有効期限が切れていればflashで警告，そうでなければ更新する
+
+有効期限が切れているかどうかは以下のように確認をする
+
+``` ruby
+def password_reset_expired?
+  reset_sent_at < 2.hours.ago
+end
+```
+
+### 10.2.5 Password reset test
+
+password_resetについても，integration testを書く  
+行っていることは，これまでの章で習ったこと
