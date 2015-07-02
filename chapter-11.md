@@ -156,10 +156,128 @@ Micropostsのintegration testを書く
 
 fixtureを書く際，Micropostsのuserには``` user: user_name ```と指定することができる (user_nameはuser fixturesで指定している見出し)
 
-full_titleヘルパを利用するために，``` include ApplicationHelper ```をする
+**full_titleヘルパを利用するために，``` include ApplicationHelper ```をする**
 
 ``` response.body ```は，現在表示されている (べき) ページのhtmlのソースが文字列として入っている
 
-assert_selectはタグを指定する必要があるが，assert_matchは第一引数に探したい文字列，第二引数にどの文字列から探すかを指定し，タグを指定する必要は無い
+**assert_selectはタグを指定する必要があるが，assert_matchは第一引数に探したい文字列，第二引数にどの文字列から探すかを指定し，タグを指定する必要は無い**
 
-``` assert_select 'h1>img.gravatar' ```は，h1の中のimg.gravatarという意味
+**``` assert_select 'h1>img.gravatar' ```は，h1の中のimg.gravatarという意味**
+
+## 11.3 Manipulating microposts
+
+今は表示するだけなので，操作 (追加したり消したり) をWeb上から行えるようにする
+
+また，feedも追加する
+
+今回は全ての操作をHome pageで行うため，create, destroyアクションのみがあればよい
+
+### 11.3.1 Micropost access control
+
+まず，ログインしていないユーザにはcreate, destroyが行えないようにする (まずテストを書く)
+
+User Controllerにあったlogged_in_userメソッドをApplicationControllerに移動させ，どのControllerからも使用できるようにする (元々User Controllerにあったものは消す)
+
+次に，Micropost Controllerにbefore_actionとしてlogged_in_userを追加する
+
+### 11.3.2 Creating microposts
+
+createを実装していく
+
+現在，ログインしていてもHome Pageに"Sign up now!"があって不自然なので，micropostを投稿するフォームを，ログインしている時のみHome Pageに表示させる
+
+Userと同じようにcreateメソッドを追記するが，newではなくbuildを使う
+
+また，Home Pageのviewは，ログインしているかそうでないかのif-elseをerbで書くことにより操作する
+
+ユーザ情報を部分テンプレートとして追加する  
+pluralize(num, word)は，単数/複数形を自動で管理する
+
+また，投稿フォームも部分テンプレートとして追加する
+
+form_forで使用するため，static_pages_controller#homeにて，ログインしている場合のみ@micropost (Micropost.new) を生成する
+
+
+また，この投稿フォームでも_error_messages.html.erbを使っているが，これは現在@userのエラー内容を使用することを前提とするため，どのオブジェクトに対しても機能するように，以下のように改良する
+
+改良前
+
+``` ruby
+<% if @user.errors.any? %>
+```
+
+改良後
+
+``` ruby
+<% if object.errors.any? %>
+```
+
+そして部分テンプレートを使うことろで，objectを以下のように指定する
+
+``` ruby
+<%= render 'shared/error_messages', object: f.object %>
+```
+
+こうすることで，どのオブジェクトでも使いまわせるようになる
+
+テストが通り，バリデーションが効いていることを確認する
+
+### 11.3.3 A proto-feed
+
+現在，投稿しても結果をすぐに確認することができないため，Home Pageにfeedを設置する
+
+feedは，あとで機能を拡張するが，この時点では自分の投稿が確認できるようになっている
+
+User Modelにfeedメソッドを追加し，feedを簡単に習得できるようにしておく
+
+後の拡張のために，``` Micropost.where("user_id = ?", id) ```とする
+
+また，"user_id = #{id}"とせず?を使う理由は，これを使うことでエスケープを行い，SQL injectionを防ぐことができるため
+
+feedも長くなる可能性が十分にあるため，paginateを使用する
+
+static_pages_controller#homeにて呼び出し，表示させる
+
+ただし，以下のコードでは
+
+``` ruby
+if @micropost.save
+  flash[:success] = "Micropost created!"
+  redirect_to root_url
+else
+  # @feed_items = []
+  render 'static_pages/home'
+end
+```
+
+elseの後の``` @feed_items = [] ```が無かったとすると，そのままstatic_pages/homeがrenderされる (static_pages_controller#homeが呼ばれない) ため，@feed_itemsが宣言されずエラーとなる
+
+そのため，ここで宣言を行う (ifの中の場合はredirect_toなので，static_pages_controller#hogeが呼ばれる)
+
+### 11.3.4 Destroying microposts
+
+次に，各micropostsの作成者が，そのMicropostを削除できるようにする
+
+viewで，自分のポストに"delete"ボタンを追加することにより実装する
+
+まず，viewにdeleteボタンを追加する
+
+> The main difference is that, rather than using an @user variable with an admin_user before filter, we’ll find the micropost through the association, which will automatically fail if a user tries to delete another user’s micropost.
+
+ユーザの削除ではbefore_filterで管理者以外のユーザが削除できないようにしていたため，今回はbefore_filterで所有者本人かどうかを確かめる
+
+**request.referrerは，そのページを見る前にどのページを見ていたかの場所を記憶している**
+
+また，(left) || (right)は，leftがfalseまたはnilだった時にrightが評価され，そうでなければleftが評価される
+
+### 11.3.5 Micropost tests
+
+テストを書く
+
+1. micropost作成者ではないユーザがそれを消そうとした場合，消されずrootにリダイレクトされる
+2. 不正な入力の時にエラーが表示され，投稿はされない
+3. 不正ではない入力の時に投稿され，rootにリダイレクトし，response.bodyに投稿した内容が含まれている
+4. micropostの持ち主が消そうとした時，きちんと消える
+5. 自分ではないユーザのshowに訪れた時，deleteボタンが0個表示されている
+
+ことをテストし，通ることを確認する
