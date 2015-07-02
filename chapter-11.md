@@ -281,3 +281,46 @@ viewで，自分のポストに"delete"ボタンを追加することにより�
 5. 自分ではないユーザのshowに訪れた時，deleteボタンが0個表示されている
 
 ことをテストし，通ることを確認する
+
+## 11.4 Micropost images
+
+textだけではなく，画像も投稿できるようにする
+
+### 11.4.1 Basic image upload
+
+アップローダはCarrierWaveを使うため，Gemfileに以下を追記する
+
+``` ruby
+gem 'carrierwave',             '0.10.0'
+gem 'mini_magick',             '3.8.0'
+gem 'fog',                     '1.23.0'
+```
+
+bundle installを行う
+
+CarrierWaveはgeneratorとしてuploaderを追加するため，それを使って以下を行う
+
+``` rails generate uploader Picture ```
+
+uploaderで生成されたPictureは，外部とstring columnで関連させる必要がある (Pictureではなく，関連させる先にstring columnを追加する)
+
+よって，Micropostにpicture:stringを追加し，Pictureと関連付けるために，Micropost Modelに以下を追記する
+
+``` ruby
+mount_uploader :picture, PictureUploader
+```
+
+また，view側にf.file_fieldで画像用inputを追加する  
+画像投稿を追加する際は，form_forに``` html: { multipart: true } ```を追記する
+
+strong paramsのpermitに，先ほど追加したpictureを追加する
+
+そして表示として，_micropost.html.erbに，画像データを持っていれば表示するよう，以下のように追記する
+
+画像データが存在するかは，``` .picture? ```で調べることができる
+
+``` ruby
+  <%= image_tag micropost.picture.url if micropost.picture? %>
+```
+
+### 11.4.2 Image validation
