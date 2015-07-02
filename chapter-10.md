@@ -356,3 +356,11 @@ end
 
 password_resetについても，integration testを書く  
 行っていることは，これまでの章で習ったこと
+
+## 10.3 Email in production
+
+development環境では実際にメールを送ることができないため，production環境で送信をしてみる
+
+(Rails Tutorilaではsendgridを使用しているが，私はロリポップのメールを使用した)
+
+[【Listing 10.56】SendGridではなくロリポのメールを使って送受信する](https://github.com/alotofwe/sample_app/issues/10)
