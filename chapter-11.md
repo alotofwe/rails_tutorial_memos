@@ -322,5 +322,3 @@ strong paramsのpermitに，先ほど追加したpictureを追加する
 ``` ruby
   <%= image_tag micropost.picture.url if micropost.picture? %>
 ```
-
-### 11.4.2 Image validation
