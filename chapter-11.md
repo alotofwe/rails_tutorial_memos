@@ -322,3 +322,102 @@ strong paramsのpermitに，先ほど追加したpictureを追加する
 ``` ruby
   <%= image_tag micropost.picture.url if micropost.picture? %>
 ```
+
+### 11.4.2 Image validation
+
+画像へのバリデーションを追加する
+
+1. 形式がjpg, jpeg, git, pngのいずれかであるもののみを受け付ける
+2. サイズが5MB以下のもののみ受け付ける
+
+というものを追加する
+
+1についてはPictureUploaderにコメントアウトされて記載されているため，コメントアウトを外す
+
+2については，サイズに関するバリデートは標準に無いため，以下のように自作する
+
+``` ruby
+validate  :picture_size
+
+private
+
+# Validates the size of an uploaded picture.
+def picture_size
+  if picture.size > 5.megabytes
+    errors.add(:picture, "should be less than 5MB")
+  end
+end
+```
+
+**また，viewの方でも，以下のように制限を行う**
+
+``` ruby
+<%= f.file_field :picture, accept: 'image/jpeg,image/gif,image/png' %>
+```
+
+``` js
+$('#micropost_picture').bind('change', function() {
+  var size_in_megabytes = this.files[0].size/1024/1024;
+  if (size_in_megabytes > 5) {
+    alert('Maximum file size is 5MB. Please choose a smaller file.');
+  }
+});
+```
+
+### 11.4.3 Image resizing
+
+画像の容量の問題はクリアしていても，画像の縦横のサイズが大きく画面からはみ出るものが投稿されてしまう可能性があるため，投稿された時にリサイズを行う
+
+リサイズにはImageMagickが必要なので，入っていなければapt-getやbrew install等で入れる
+
+Rails側では，ImageMagickをRailsで使用するインタフェースであるCarrierWave::MiniMagickをPictureUploaderにincludeしておく
+その上で，以下を追加する
+
+``` ruby
+process resize_to_limit: [400, 400]
+```
+
+**アップロード時にリサイズされるため，リサイズ導入前に投稿された画像にはリサイズはかからない**
+
+### 11.4.4 Image upload in production
+
+画像をローカルに (アプリのあるサーバ内) に保存するということは，production環境においては適していないため (量が多くなり，管理が難しくなる)，外部のストレージサービスに保存する
+
+今回は，Amazon S3を使用する
+
+PictureUploaderのストレージを指定するところで，productionであればfogを使うように指定する
+
+以下の手順で，S3の登録を行う
+
+1. AWSに登録する
+2. IAMに入り，新規ユーザの作成を行う
+3. key, secret_keyを落とす
+4. 使っているユーザの設定画面で「ポリシーのアタッチ」ボタンを押す
+5. AmazonS3FullAccessにアタッチする
+6. S3のバケットを作成する (名前に``` . ```は含めない)
+
+以上を行った上で，config/initializers/carrier_wave.rbを作成し，以下を追記する
+
+``` ruby
+if Rails.env.production?
+  CarrierWave.configure do |config|
+    config.fog_credentials = {
+      # Configuration for Amazon S3
+      :provider              => 'AWS',
+      :aws_access_key_id     => ENV['S3_ACCESS_KEY'],
+      :aws_secret_access_key => ENV['S3_SECRET_KEY']
+    }
+    config.fog_directory     =  ENV['S3_BUCKET']
+  end
+end
+```
+
+その上で，key, secret_key, バケット名を以下のようにherokuに設定する
+
+```
+heroku config:set S3_ACCESS_KEY=<access key>
+heroku config:set S3_SECRET_KEY=<secret key>
+heroku config:set S3_BUCKET=<bucket name>
+```
+
+.gitignoreでローカルに落とされた画像を無視するように設定し (``` /public/uploads ```)，デプロイして画像の保存がheroku上でうまく動くことを確かめる
