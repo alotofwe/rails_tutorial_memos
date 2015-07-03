@@ -228,6 +228,10 @@ email, name, password_digestに正しい値を指定する
 
 **stringには暗号化したい文字列を，costにはどのくらい強力に暗号化を行うかを指定する (その分暗号化にかかる時間が長くなる)**
 
+> repeat (2^cost)
+
+[bcrypt - Wikipedia, the free encyclopedia](https://en.wikipedia.org/wiki/Bcrypt)
+
 本番環境ではある程度強力にする必要があるが，今回はテスト用データであるため，最小コストを指定する
 
 最小コストの指定方法は以下のとおり
