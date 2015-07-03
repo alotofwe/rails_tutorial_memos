@@ -432,7 +432,11 @@ Fixnumクラスにはtime helperがある
 
 -----
 
-また，user_idを暗号化してcookiesに記憶させるため，.signedを使用する
+また，user_idに署名を追加してcookiesに記憶させるため，.signedを使用する
+
+> Returns a jar that'll automatically generate a signed representation of cookie value and verify it when reading from the cookie again. This is useful for creating cookies with values that the user is not supposed to change. If a signed cookie was tampered with by the user (or a 3rd party), nil will be returned.
+
+[ActionDispatch::Cookies::ChainedCookieJars](http://api.rubyonrails.org/classes/ActionDispatch/Cookies/ChainedCookieJars.html)
 
 ``` ruby
 ookies.permanent.signed[:user_id] = user.id

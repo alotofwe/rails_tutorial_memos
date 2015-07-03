@@ -387,7 +387,7 @@ end
 
 > As a result, WEBrick isn’t suitable for production use, so we’ll replace WEBrick with Puma, an HTTP server that is capable of handling a large number of incoming requests.
 
-**production環境下ではWEBrickは適していないため，WEBrick with Pumaに切り替えて大量のリクエストの処理に耐えられるようにする**
+**production環境下ではWEBrickは適していないため，Pumaに切り替えて大量のリクエストの処理に耐えられるようにする**
 
 > Web applications that process concurrent requests make more efficient use of dyno resources than those that only process one request at a time. Puma is a webserver that competes with Unicorn and allows you to process concurrent requests.
 
